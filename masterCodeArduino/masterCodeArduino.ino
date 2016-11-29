@@ -22,7 +22,7 @@
 #define US_ROUNDTRIP_MM 5.7
 
 // This constructor is for the UltraSonic Distance Sensor.
-NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX)
 
 // This void function is used to setup important features
 // of the Arduino microprocessor board.
