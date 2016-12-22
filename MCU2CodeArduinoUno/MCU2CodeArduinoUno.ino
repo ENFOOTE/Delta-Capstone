@@ -3,13 +3,19 @@
 // Author One: David S Vasquez
 // Author Two: Eric Foote
 // Author Three: Jorge Villalobos
-
+// Libraries: "NewPing.h" is used for the UltraSonic Distance Sensor, "SPI.h" 
+// is used for the SPI communication between the Arduino boards.
 // Information: This is the master code program for the Arduino Uno
-// board. This program will be used by all the hardware connected to 
-// this board. This program communicate with the Mega board. 
+// board (second board MC2). This program will be used by all the 
+// hardware connected to this board. This program communicate with 
+// the Mega board. 
 
-// This library is for the UltraSonic Distance Sensor
-#include <NewPing.h>
+#include "NewPing.h"
+#include "SPI.h"
+
+// This declaration and initialization is for the Slave Select Pin. The
+// SPI library will automatically set the other SPI Pins.
+int SS = 10;
 
 // The variable called 'US_ROUNDTRIP_MM' was created specifically so 
 // the sensor would return distance values in millimeters. Normally, 
@@ -19,6 +25,9 @@
 // This constructor is for the UltraSonic Distance Sensor.
 NewPing sonar(TRIGGER_PIN = 8, ECHO_PIN = 7, MAX_DISTANCE = 200);
 
+// This constructor is for the SPI library found online.
+SPIClass comm;
+
 // This function will return a True or False bool value depending on
 // if an obstacle is detected on the field.
 bool read_Obstacle();
@@ -26,18 +35,31 @@ bool read_Obstacle();
 // This void function is used to setup important features
 // of the Arduino microprocessor board.
 void setup() {
+  
   Serial.begin(115200);
 
+  comm.begin();
+
+  
+
+  /*
+  // This code is related to the SPI communication code.
+  // This sets SS pin directions.
+  pinMode(SS, OUTPUT);
+
+  // Initialize SPI
+  SPI.begin();
+
+  SPI.setBitOrder(MSBFIRST);
+  */
 }
 
 // This void function acts just like the main function.
 void loop() {
-  // This code is to enable the UltraSonic Sensor. For now
-  // the code will be commented out.
-  double uS = sonar.ping();
-
+  
 
 }
+
 
 bool read_Obstacle() {
   // This variable stores the values calculated by the UltraSonic
