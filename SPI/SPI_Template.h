@@ -1,0 +1,40 @@
+#include <Arduino.h>
+
+template <typename T> unsigned int SPI_writeAnything (const T& value)
+{
+	const byte *p = (const byte*) &value;
+	
+	unsigned int i;
+	
+	for(i = 0; i < sizeof value; i++)
+		SPI.transfer(*p++);
+	
+	return i;
+}
+
+template <typename T> unsigned int SPI_readAnything(T& value)
+{
+	byte *p = (byte*) &value;
+	
+	unsigned int i;
+	
+	for(i = 0; i < sizeof value; i++)
+		*p++ = SPI.transfer(0);
+	
+	return i;
+}
+
+template <typename T> unsigned int SPI_readAnything_ISR(T& value)
+{
+	byte *p = (byte*) &value;
+	
+	unsigned int i;
+	
+	*p++ = SPDR;
+	
+	for(i = 1; i < sizeof value; i++)
+		*p++ = SPI.transfer(0);
+	
+	return i;
+	
+}
