@@ -28,6 +28,7 @@ The zip file must be extracted to the C:\Users\Llama Shaman\Documents\Arduino\li
 #include <Wire.h>
 #include <Adafruit_MotorShield.h>
 #include "utility/Adafruit_MS_PWMServoDriver.h"
+#include <Encoder.h>
 
 // Create the motor shield object with the default I2C address
 Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
@@ -40,11 +41,14 @@ Adafruit_DCMotor *myMotor2 = AFMS.getMotor(2);
 Adafruit_DCMotor *myMotor3 = AFMS.getMotor(3);
 Adafruit_DCMotor *myMotor4 = AFMS.getMotor(4);
 
+Encoder encoder1(18, 22);
+
 void setup() 
 {
   Serial.begin(115200);
   
   Serial.println("Adafruit Motorshield v2 - DC Motor test!");
+  Serial.println("Basic Encoder Test:");
 
   AFMS.begin();  // create with the default frequency 1.6KHz
   //AFMS.begin(1000);  // OR with a different frequency, say 1KHz
@@ -70,12 +74,23 @@ void setup()
 
 }
 
+long oldPosition  = -999;
+
 // This void function acts just like the main function.
 void loop() 
 {
   uint8_t i;
-  uint8_t MAX_SPEED = 100;
+  uint8_t MAX_SPEED = 30;
   uint8_t DELAY = 10;
+
+ long newPosition = encoder1.read();
+  if (newPosition != oldPosition) {
+    oldPosition = newPosition;
+    Serial.println(newPosition);
+  }
+
+
+ 
   
  //************* NORTH ********************
 
@@ -94,18 +109,22 @@ void loop()
     delay(DELAY);
     
   }
-  
+    delay(1000);
   for (i=MAX_SPEED; i!=0; i--) 
   {
     myMotor1->setSpeed(i); 
     myMotor2->setSpeed(i); 
     myMotor3->setSpeed(i); 
     myMotor4->setSpeed(i); 
+
     
     delay(DELAY);
-    
+
   }
- 
+    newPosition = encoder1.read();
+    Serial.println("After moving North");
+    Serial.println(newPosition);
+    
   //************* EAST ********************
  
   myMotor1->run(BACKWARD);
@@ -115,25 +134,34 @@ void loop()
   
   for (i=0; i<MAX_SPEED; i++) 
   {
-    myMotor1->setSpeed(i);
+    
     myMotor2->setSpeed(i);  
     myMotor3->setSpeed(i);
     myMotor4->setSpeed(i);  
+    myMotor1->setSpeed(i);
        
     delay(DELAY);
     
   }
+
+  delay(1000);
+  
   for (i=MAX_SPEED; i!=0; i--) 
   {
-    myMotor1->setSpeed(i); 
+    
     myMotor2->setSpeed(i);  
     myMotor3->setSpeed(i); 
     myMotor4->setSpeed(i);  
-    
+    myMotor1->setSpeed(i); 
+   
     delay(DELAY);
     
   }
- 
+
+    newPosition = encoder1.read();
+    Serial.println("After moving East");
+    Serial.println(newPosition);
+    
   //************* SOUTH ********************
  
   myMotor1->run(FORWARD);
@@ -142,26 +170,31 @@ void loop()
   myMotor4->run(FORWARD);  
   
   for (i=0; i<MAX_SPEED; i++) 
-  {
-    myMotor1->setSpeed(i);
-    myMotor2->setSpeed(i);  
+  {    
     myMotor3->setSpeed(i);
-    myMotor4->setSpeed(i);  
+    myMotor4->setSpeed(i); 
+    myMotor1->setSpeed(i);
+    myMotor2->setSpeed(i); 
        
     delay(DELAY);
   }
+
+   delay(1000);
   
   for (i=MAX_SPEED; i!=0; i--) 
   {
-    myMotor1->setSpeed(i); 
-    myMotor2->setSpeed(i);  
     myMotor3->setSpeed(i); 
-    myMotor4->setSpeed(i);  
+    myMotor4->setSpeed(i);
+    myMotor1->setSpeed(i); 
+    myMotor2->setSpeed(i);   
     
     delay(DELAY);
     
   }
-
+    newPosition = encoder1.read();
+    Serial.println("After moving South");
+    Serial.println(newPosition);
+    
   //************* WEST ********************
  
   myMotor1->run(FORWARD);
@@ -171,24 +204,30 @@ void loop()
   
   for (i=0; i<MAX_SPEED; i++) 
   {
+    myMotor4->setSpeed(i);
     myMotor1->setSpeed(i);
     myMotor2->setSpeed(i);  
-    myMotor3->setSpeed(i);
-    myMotor4->setSpeed(i);  
+    myMotor3->setSpeed(i);    
        
     delay(DELAY);
     
   }
+
+delay(1000);
+  
   for (i=MAX_SPEED; i!=0; i--) 
   {
+    myMotor4->setSpeed(i);
     myMotor1->setSpeed(i); 
     myMotor2->setSpeed(i);  
     myMotor3->setSpeed(i); 
-    myMotor4->setSpeed(i);  
-    
+      
     delay(DELAY);
     
   }
+    newPosition = encoder1.read();
+    Serial.println("After moving West");
+    Serial.println(newPosition);
 
   myMotor1->run(RELEASE);
   myMotor2->run(RELEASE);
