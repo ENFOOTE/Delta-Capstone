@@ -13,6 +13,7 @@
 #include "NewPing.h"
 #include "EMFSensor.h"
 #include "CapacitiveSensor.h"
+#include "ArrayLED.h"
 #include <SPI.h>
 
 // This declaration and initialization is for the Slave Select Pin. The
@@ -44,26 +45,36 @@ EMFSensor sensorE;
 // This is the constructor for the capacitive sensor.
 CapacitiveSensor sensorC;
 
+// This int variable will be used to communicate an important value to the
+// master Arduino board. Value 1 = extension cable config West-East, value 2 = extension
+// cable config North-South, value 3 = extension cable config North-East, value 4 = extension
+// cable config South-East, value 5 = extension cable config West-South, value 6 = extension 
+// cable config North-West, value 6 = forward go, value 8 = stop motion, value 9 = obstacle 
+// detected, value 0 = error.
+int legendValueSPI;
+
+// These string variables will be used for the LED features. The 'strLoc' is the current 
+// location of the robot, the 'colorLEDcurr' is the correct color per the output of the
+//  sensors.
+string strLoc;
+string colorLEDcurr;
+
 // This void function is used to setup important features
 // of the Arduino microprocessor board.
 void setup() {
   
   Serial.begin(115200);
-
-  /*
-  // This code is related to the SPI communication code.
-  // This sets SS pin directions.
-  pinMode(SS, OUTPUT);
-
-  // Initialize SPI
-  SPI.begin();
-
-  SPI.setBitOrder(MSBFIRST);
-  */
 }
 
 // This void function acts just like the main function.
 void loop() {
+  // I (David) needs to write code that uses SPI to receive the current location
+  // per the master Arduino board.
+
+
+  strLoc = 
+
+  
   // This variable will be used to store whether or not there is an obstacle in
   // the upcoming one foot square section.
   bool scan4Obstacle;
@@ -75,7 +86,7 @@ void loop() {
   bool voltDectS;
   bool voltDectW;
 
-  // This variable will be used to store whether or not there is insulation 
+  // This bool variable will be used to store whether or not there is insulation 
   // below the layer of glass.
   bool insulationDect;
 
@@ -111,7 +122,9 @@ void loop() {
 
       // The following code will determine if the extension cable is running in a straight 
       // line or if there is a bend at this particular square.
-      
+      legendValueSPI = cableConfig(sensorN, sensorE, sensorS, sensorW);
+
+      // Send the SPI code value to the master, use the 'legendValueSPI' int variable.
       
     }
     else {
@@ -124,12 +137,19 @@ void loop() {
       if( ) {
         
       }
+      // I (David) need to include the code for lighting the LED array at this point in
+      // code. Look at Jorge's implementation code and add it here.
+            
     }
   }
   else
   {
     // This else statement will send a variable to the MCU that drives the motors. The purpose of 
     // variable is to adjust the path of the robot to avoid the obstacle.
+    legendValueSPI = 9;
+
+    // I (David) needs to write code using SPI to communicate to the master that an obstacle has 
+    // been detected.
   }
 }
 
@@ -172,7 +192,7 @@ int cableConfig(float vN, float vE, float vS, float vW) {
   const float minRangeV = 0.95 * expectV;
   const float maxRangeV = 1.05 * expectV;
 
-  int configCable = 0;
+  int configCableVal = 0;
 
   // The following six if statements determine the configuration of the extension cable 
   // at the current 1 square foot section. Config 1 is the cable running west to east. Config 2 
@@ -180,29 +200,29 @@ int cableConfig(float vN, float vE, float vS, float vW) {
   // is the cable running south to east. Config 5 is the extension cable running west to south. 
   // Config 6 is the extension cable running west to north.
   if((minRangeV <= vW && vW <= maxRangeV) && (minRangeV <= vE && vE <= maxRangeV)) {
-    configCable = 1; 
+    configCableVal = 1; 
   }
 
   if((minRangeV <= vN && vN <= maxRangeV) && (minRangeV <= vS && vS <= maxRangeV)) {
-    configCable = 2; 
+    configCableVal = 2; 
   }
 
   if((minRangeV <= vN && vN <= maxRangeV) && (minRangeV <= vE && vE <= maxRangeV)) {
-    configCable = 3; 
+    configCableVal = 3; 
   }
 
     if((minRangeV <= vE && vE <= maxRangeV) && (minRangeV <= vS && vS <= maxRangeV)) {
-    configCable = 4; 
+    configCableVal = 4; 
   }
 
     if((minRangeV <= vW && vW <= maxRangeV) && (minRangeV <= vS && vS <= maxRangeV)) {
-    configCable = 5; 
+    configCableVal = 5; 
   }
 
     if((minRangeV <= vW && vW <= maxRangeV) && (minRangeV <= vN && vN <= maxRangeV)) {
-    configCable = 6; 
+    configCableVal = 6; 
   }
 
-  return configCable;
+  return configCableVal;
 }
 

@@ -16,7 +16,8 @@
 // to digital converter on the Arduino board. However, this code might need some
 // updates. I (David) needs to research the ADC. The 'EMFSensor' function is a
 // constructor. The 'getVoltage' function stores the RMS voltage into the 'voltageRMS'
-// variable.
+// variable. The 'checkRange' function returns a bool variable, true equals EMF voltage
+// has been detected, false equals EMF voltage not detected.
 class EMFSensor
 {
     private:
@@ -29,3 +30,4 @@ class EMFSensor
 
 };
 
+#endif
