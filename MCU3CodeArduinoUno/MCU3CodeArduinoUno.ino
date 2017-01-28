@@ -1,30 +1,22 @@
-// EE4390 EE Design I
-// Date created: December 01, 2016
-// Programmer One: David S Vasquez
-// Programmer Two: Eric Foote
+// EE4391 EE Design II
+// Date created: January 27, 2016
+// Programmer One: Eric Foote
+// Programmer Two: David S Vasquez
 // Programmer Three: Jorge Villalobos
 
-// Information: This program is being used to test the power button code, SPI,
-// the motor encoder code all together.
+// Information: This program is being used to test a push button, the action
+// of pressing the push button should enable the SPI transfer of data and the 
+// motor code. 
 
 #include <SPI.h>
-#include "SPI_Template.h"
 #include <Wire.h>
 #include <Adafruit_MotorShield.h>
 #include "utility/Adafruit_MS_PWMServoDriver.h"
 #include <Encoder.h>
 
-typedef struct myStruct
-{
-  int a;
-  float b;
-  long c;
-};
-
-myStruct structComm1;
-myStruct structComm2;
-bool haveData = false;
-bool haveData1 = false;
+// This integer variable will store the SPI integer variable that 
+// will be sent by the master.
+int slaveReceivedInt = 0;
 
 // Create the motor shield object with the default I2C address
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
@@ -45,13 +37,9 @@ Encoder encoder4(19, 25);
 void setup()
 {
   Serial.begin(115200);
-
-  Serial.println("Adafruit Motorshield v2 - DC Motor test!");
-  Serial.println("Basic Encoder Test:");
-
+  
   pinMode(MISO, OUTPUT);
 
-  // This code turns on the SPI in slave mode.
   SPCR |= _BV(SPE);
 
   SPI.attachInterrupt();
@@ -61,6 +49,7 @@ void setup()
 
   // Set the speed to start, from 0 (off) to 255 (max speed)
 
+  // This code needs to be called by the hard interrupt for the stop.
   myMotor1->setSpeed(0);
   myMotor2->setSpeed(0);
   myMotor3->setSpeed(0);
@@ -76,10 +65,7 @@ void setup()
   myMotor2->run(RELEASE);
   myMotor3->run(RELEASE);
   myMotor4->run(RELEASE);
-
 }
-
-long oldPosition  = -999;
 
 // This void function acts just like the main function.
 void loop() {
@@ -92,21 +78,21 @@ void loop() {
   long newPosition3 = 0;
   long newPosition4 = 0;
 
-  if (haveData) {
-    delay(2500);
+  delay(2500);
 
-    encoder1.write(0);
-    encoder2.write(0);
-    encoder3.write(0);
-    encoder4.write(0);
+  encoder1.write(0);
+  encoder2.write(0);
+  encoder3.write(0);
+  encoder4.write(0);
 
-    //************* NORTH ********************
+  //************* NORTH ********************
 
-    myMotor1->run(BACKWARD);
-    myMotor2->run(FORWARD);
-    myMotor3->run(FORWARD);
-    myMotor4->run(BACKWARD);
+  myMotor1->run(BACKWARD);
+  myMotor2->run(FORWARD);
+  myMotor3->run(FORWARD);
+  myMotor4->run(BACKWARD);
 
+  if (slaveReceivedInt == 7) {
     for (i = 0; i < MAX_SPEED; i++) {
       myMotor1->setSpeed(i);
       newPosition1 = abs(encoder1.read());
@@ -130,19 +116,29 @@ void loop() {
 
       delay(DELAY);
     }
+  }
+  else if (slaveReceivedInt == 8) {
+    myMotor1->setSpeed(0);
+    myMotor2->setSpeed(0);
+    myMotor3->setSpeed(0);
+    myMotor4->setSpeed(0);
 
+    while (true) { }
+  }
+
+  newPosition1 = abs(encoder1.read());
+  newPosition2 = abs(encoder2.read());
+  newPosition3 = abs(encoder3.read());
+  newPosition4 = abs(encoder4.read());
+
+  while ( ((newPosition1 + newPosition2 + newPosition3 + newPosition4) / 4) < 3500) {
     newPosition1 = abs(encoder1.read());
     newPosition2 = abs(encoder2.read());
     newPosition3 = abs(encoder3.read());
     newPosition4 = abs(encoder4.read());
+  }
 
-    while ( ((newPosition1 + newPosition2 + newPosition3 + newPosition4) / 4) < 3500) {
-      newPosition1 = abs(encoder1.read());
-      newPosition2 = abs(encoder2.read());
-      newPosition3 = abs(encoder3.read());
-      newPosition4 = abs(encoder4.read());
-    }
-
+  if (slaveReceivedInt == 7) {
     myMotor1->setSpeed(50);
     Serial.println("Speed1 Now 50");
     Serial.println(newPosition1);
@@ -158,14 +154,24 @@ void loop() {
     myMotor4->setSpeed(50);
     Serial.println("Speed4 Now 50");
     Serial.println(newPosition4);
+  }
+  else if (slaveReceivedInt == 8) {
+    myMotor1->setSpeed(0);
+    myMotor2->setSpeed(0);
+    myMotor3->setSpeed(0);
+    myMotor4->setSpeed(0);
 
-    while (((newPosition1 + newPosition2 + newPosition3 + newPosition4) / 4) < 4500) {
-      newPosition1 = abs(encoder1.read());
-      newPosition2 = abs(encoder2.read());
-      newPosition3 = abs(encoder3.read());
-      newPosition4 = abs(encoder4.read());
-    }
+    while (true) { }
+  }
 
+  while (((newPosition1 + newPosition2 + newPosition3 + newPosition4) / 4) < 4500) {
+    newPosition1 = abs(encoder1.read());
+    newPosition2 = abs(encoder2.read());
+    newPosition3 = abs(encoder3.read());
+    newPosition4 = abs(encoder4.read());
+  }
+
+  if (slaveReceivedInt == 7) {
     myMotor1->setSpeed(25);
     Serial.println("Speed Now 25");
     Serial.println(newPosition1);
@@ -181,33 +187,42 @@ void loop() {
     myMotor4->setSpeed(25);
     Serial.println("Speed4 Now 25");
     Serial.println(newPosition4);
+  }
+  else if (slaveReceivedInt == 8) {
+    myMotor1->setSpeed(0);
+    myMotor2->setSpeed(0);
+    myMotor3->setSpeed(0);
+    myMotor4->setSpeed(0);
 
-    while (((newPosition1 + newPosition2 + newPosition3 + newPosition4) / 4) < 5000) {
-      newPosition1 = abs(encoder1.read());
-      newPosition2 = abs(encoder2.read());
-      newPosition3 = abs(encoder3.read());
-      newPosition4 = abs(encoder4.read());
-    }
+    while (true) { }
+  }
+  while (((newPosition1 + newPosition2 + newPosition3 + newPosition4) / 4) < 5000) {
+    newPosition1 = abs(encoder1.read());
+    newPosition2 = abs(encoder2.read());
+    newPosition3 = abs(encoder3.read());
+    newPosition4 = abs(encoder4.read());
+  }
 
-    myMotor1->run(RELEASE);
-    myMotor2->run(RELEASE);
-    myMotor3->run(RELEASE);
-    myMotor4->run(RELEASE);
+  myMotor1->run(RELEASE);
+  myMotor2->run(RELEASE);
+  myMotor3->run(RELEASE);
+  myMotor4->run(RELEASE);
 
-    //************SOUTH************************
+  //************SOUTH************************
 
-    delay(2500);
+  delay(2500);
 
-    encoder1.write(0);
-    encoder2.write(0);
-    encoder3.write(0);
-    encoder4.write(0);
+  encoder1.write(0);
+  encoder2.write(0);
+  encoder3.write(0);
+  encoder4.write(0);
 
-    myMotor1->run(FORWARD);
-    myMotor2->run(BACKWARD);
-    myMotor3->run(BACKWARD);
-    myMotor4->run(FORWARD);
+  myMotor1->run(FORWARD);
+  myMotor2->run(BACKWARD);
+  myMotor3->run(BACKWARD);
+  myMotor4->run(FORWARD);
 
+  if (slaveReceivedInt == 7) {
     for (i = 0; i < MAX_SPEED; i++) {
       myMotor3->setSpeed(i);
       newPosition3 = abs(encoder3.read());
@@ -231,19 +246,29 @@ void loop() {
 
       delay(DELAY);
     }
+  }
+  else if (slaveReceivedInt == 8) {
+    myMotor1->setSpeed(0);
+    myMotor2->setSpeed(0);
+    myMotor3->setSpeed(0);
+    myMotor4->setSpeed(0);
 
+    while (true) { }
+  }
+
+  newPosition1 = abs(encoder1.read());
+  newPosition2 = abs(encoder2.read());
+  newPosition3 = abs(encoder3.read());
+  newPosition4 = abs(encoder4.read());
+
+  while ( ((newPosition1 + newPosition2 + newPosition3 + newPosition4) / 4) < 3500) {
     newPosition1 = abs(encoder1.read());
     newPosition2 = abs(encoder2.read());
     newPosition3 = abs(encoder3.read());
     newPosition4 = abs(encoder4.read());
+  }
 
-    while ( ((newPosition1 + newPosition2 + newPosition3 + newPosition4) / 4) < 3500) {
-      newPosition1 = abs(encoder1.read());
-      newPosition2 = abs(encoder2.read());
-      newPosition3 = abs(encoder3.read());
-      newPosition4 = abs(encoder4.read());
-    }
-
+  if (slaveReceivedInt == 7) {
     myMotor3->setSpeed(50);
     Serial.println("Speed3 Now 50");
     Serial.println(newPosition3);
@@ -259,14 +284,24 @@ void loop() {
     myMotor2->setSpeed(50);
     Serial.println("Speed2 Now 50");
     Serial.println(newPosition2);
+  }
+  else if (slaveReceivedInt == 8) {
+    myMotor1->setSpeed(0);
+    myMotor2->setSpeed(0);
+    myMotor3->setSpeed(0);
+    myMotor4->setSpeed(0);
 
-    while (((newPosition1 + newPosition2 + newPosition3 + newPosition4) / 4) < 4500) {
-      newPosition1 = abs(encoder1.read());
-      newPosition2 = abs(encoder2.read());
-      newPosition3 = abs(encoder3.read());
-      newPosition4 = abs(encoder4.read());
-    }
+    while (true) { }
+  }
 
+  while (((newPosition1 + newPosition2 + newPosition3 + newPosition4) / 4) < 4500) {
+    newPosition1 = abs(encoder1.read());
+    newPosition2 = abs(encoder2.read());
+    newPosition3 = abs(encoder3.read());
+    newPosition4 = abs(encoder4.read());
+  }
+
+  if (slaveReceivedInt == 7) {
     myMotor3->setSpeed(25);
     Serial.println("Speed3 Now 25");
     Serial.println(newPosition3);
@@ -282,36 +317,35 @@ void loop() {
     myMotor2->setSpeed(25);
     Serial.println("Speed2 Now 25");
     Serial.println(newPosition2);
+  }
+  else if (slaveReceivedInt == 8) {
+    myMotor1->setSpeed(0);
+    myMotor2->setSpeed(0);
+    myMotor3->setSpeed(0);
+    myMotor4->setSpeed(0);
 
-    while (((newPosition1 + newPosition2 + newPosition3 + newPosition4) / 4) < 5000) {
-      newPosition1 = abs(encoder1.read());
-      newPosition2 = abs(encoder2.read());
-      newPosition3 = abs(encoder3.read());
-      newPosition4 = abs(encoder4.read());
-    }
-
-    myMotor3->run(RELEASE);
-    myMotor4->run(RELEASE);
-    myMotor1->run(RELEASE);
-    myMotor2->run(RELEASE);
-
-    //************* EAST ********************
-    //************* SOUTH *******************
-    //************* WEST ********************
+    while (true) { }
+  }
+    
+  while (((newPosition1 + newPosition2 + newPosition3 + newPosition4) / 4) < 5000) {
+    newPosition1 = abs(encoder1.read());
+    newPosition2 = abs(encoder2.read());
+    newPosition3 = abs(encoder3.read());
+    newPosition4 = abs(encoder4.read());
   }
 
-  // This if statement executes when the red button has been pressed. The while loop is
-  // an infinite loop that is suppose to freeze the void loop function.
-  if (haveData1) {
-    while (1) { }
-  }
+  myMotor3->run(RELEASE);
+  myMotor4->run(RELEASE);
+  myMotor1->run(RELEASE);
+  myMotor2->run(RELEASE);
+
+  //************* EAST ********************
+  //************* SOUTH *******************
+  //************* WEST ******************** 
 }
 
-// This is a SPI interrupt routine function for the green go button and the red stop
-// button.
+// This is a SPI interrupt routine function for the green go button.
 ISR(SPI_STC_vect) {
-  SPI_readAnything_ISR(structComm1);
-  SPI_readAnything_ISR(structComm2);
-  haveData = true;
-  haveData1 = true;
+  slaveReceivedInt = SPDR;
 }
+
