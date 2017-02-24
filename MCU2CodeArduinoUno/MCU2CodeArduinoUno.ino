@@ -15,28 +15,37 @@
 // hardware connected to this board. This program communicate with 
 // the Mega board. 
 
-#include "NewPing.h"
-#include "EMFSensor.h"
-#include "CapacitiveSensor.h"
-#include "ArrayLED.h"
+// #include "NewPing.h"
+// #include "EMFSensor.h"
+// #include "CapacitiveSensor.h"
+// #include "ArrayLED.h"
 #include <SPI.h>
+
+// This integer variable will be used by the switch statement located in
+// the SPI interrupt function.
+volatile int switchCommand = 0;
 
 // This declaration and initialization is for the Slave Select Pin. The
 // SPI library will automatically set the other SPI Pins.
-// int SS = 10;
+int slavePin = 10;
 
 // The variable called 'US_ROUNDTRIP_MM' was created specifically so 
 // the sensor would return distance values in millimeters. Normally, 
 // the sensor would return values in centimeters.
-#define US_ROUNDTRIP_MM 5.7
+// #define US_ROUNDTRIP_MM 5.7
 
 // This constructor is for the UltraSonic Distance Sensor.
-NewPing sonar(TRIGGER_PIN = 8, ECHO_PIN = 7, MAX_DISTANCE = 200);
+// NewPing sonar(TRIGGER_PIN = 8, ECHO_PIN = 7, MAX_DISTANCE = 200);
 
 // This function will return a True or False bool value depending on
 // if an obstacle is detected on the field.
-bool read_Obstacle();
+// bool read_Obstacle();
 
+// This variable will be used to store an integer value sent by SPI from
+// the master. This value starts the entire sensor LED algorithm.
+int startAlgorithmSensorLED;
+
+/*
 // This function determines the configuration of the extension cable.
 int cableConfig(float, float, float, float);
 
@@ -51,11 +60,11 @@ EMFSensor sensorE;
 CapacitiveSensor sensorC;
 
 // This int variable will be used to communicate an important value to the
-// master Arduino board. Value 1 = extension cable config West-East, value 2 = extension
-// cable config North-South, value 3 = extension cable config North-East, value 4 = 
-// extension cable config South-East, value 5 = extension cable config West-South, value 
-// 6 = extension cable config North-West, value 6 = forward go, value 8 = stop motion, 
-// value 9 = obstacle detected, value 0 = error.
+// master Arduino board. Value 1 = extension cable config West-East, value 2 = 
+// extension cable config North-South, value 3 = extension cable config North-East, 
+// value 4 = extension cable config South-East, value 5 = extension cable config 
+// West-South, value 6 = extension cable config North-West, value 6 = forward go, 
+// value 8 = stop motion, value 9 = obstacle detected, value 0 = error.
 int legendValueSPI;
 
 // These string variables will be used for the LED features. The 'strLoc' is the current 
@@ -66,18 +75,80 @@ string colorLEDcurr;
 
 // This is the class object instance of the LED using Jorge's LED code.
 ArrayLED mapObject;
+*/
 
 // This void function is used to setup important features
 // of the Arduino microprocessor board.
 void setup() {
   Serial.begin(115200);
+
+  // This code enables master in and slave out.
+  pinMode(MISO, OUTPUT);
+
+  // This code enables SPI in slave mode.
+  SPCR |= _BV(SPE);
+
+  // This code enables SPI interrupts.
+  SPCR |= _BV(SPIE);
+
+  // The reason for initializing this integer variable is to ensure that sensor-LED
+  // algorithm does not execute until the SPI command.
+  startAlgorithmSensorLED = 0;
+}
+
+// This function is the SPI interrupt routine function.
+ISR(SPI_STC_vect) {
+  // The function will use a switch with command variable. The command variable
+  // will determine which values are sent to the master.
+  int incomingInt = SPDR;
+
+  switch(switchCommand) {
+    case 0:
+      switchCommand = incomingInt;
+      SPDR = 0;
+      break;
+    // case 1:
+    // case 2:
+    // case 3:
+    // case 4:
+    // case 5:
+    // case 6:
+    case 7:
+      startAlgorithmSensorLED = incomingInt;
+      // switchCommand = 0;
+      break;
+    // case 8:
+    // case 9:
+    // case 10:
+    // case 11:
+    // case 12:
+    // case 13:
+    // case 14:  
+  }
 }
 
 // This void function acts just like the main function.
 void loop() {
+  // This if statement will ensure that if SPI isn't active (slave select is HIGH),
+  // then clear the current command for the switch (variable switchCommand).
+  if(digitalRead(slavePin) == HIGH) {
+    switchCommand = 0;
+  }
+
+  /*
+  Serial.println("Start algorithm variable is:");
+  Serial.println(startAlgorithmSensorLED);
+  Serial.println("Incoming int is:");
+  Serial.println(incomingInt);
+  delay(5000);
+  */
+  
   // This if statement will execute the sensor algorithm.
-  if(/*argument will become true because of a SPI command*/) {
-    
+  if(startAlgorithmSensorLED == 7) {
+    Serial.println("Test: successful transmission from master to slave.");
+
+    // startAlgorithmSensorLED = 0;
+    /*
     // I (David) needs to write code that uses SPI to receive the current location
     // per the master Arduino board.
     strLoc = 
@@ -158,10 +229,11 @@ void loop() {
 
       // I (David) needs to write code using SPI to communicate to the master that an 
       // obstacle has been detected.
-    }
+    }*/
   }
 }
 
+/*
 // This function is used to determine if there is an obstacle on the i
 bool read_Obstacle() {
   // This variable stores the values calculated by the UltraSonic
@@ -234,5 +306,5 @@ int cableConfig(float vN, float vE, float vS, float vW) {
   }
 
   return configCableVal;
-}
+*/
 
