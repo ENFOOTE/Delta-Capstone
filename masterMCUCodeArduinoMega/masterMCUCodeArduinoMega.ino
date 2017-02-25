@@ -1,118 +1,103 @@
 // EE4390 EE Design I and EE4391 EE Design II
-// Date created: November 26, 2016 
+// Date created: January 25, 2016
 // Programmer One: David S Vasquez
-// Programmer Two: Eric Foote
+// Programmer Two: Geovanni Hernandez
 // Programmer Three: Jorge Villalobos
-// Information: This is the master code program for the Mega Arduino 
-// board. The program will have the mapping algorithm. This algorithm
-// will map the entire tunnel including the extension cable and the
-// dead-end tunnel. In addition, this program will have the code for
-// the start button and the stop button.
+// Programmer Four: Eric Foote
 
-// These two libraries are using for the SPI template code.
+// Information: This program is being used to test a push button, the action
+// of pressing the push button should enable the SPI transfer of data. 
+
 #include <SPI.h>
-#include "SPI_Template.h"
 
+// This int variable will be used for the push button, Button1
+// corresponds to 'send' button.
+int greenButton = 2;
+// int redButton = 3;
 
+// This is the slave select pin.
+const int slavePin = 10;
 
+// The 'green push-button' will switch the state.
+bool toggle_on = false;
 
+// The 'red push-button' will switch the state.
+// bool toggle_off = false;
 
-// This structure is for the SPI communication. The programmers can
-// create custom structure objects to fit the needs of the program.
-typedef struct myStruct {
-  int a;
-  float b;
-  long c;
-};
+// These integer variables are used for important SPI communications. 
+int masterGreen = 7;
+// int masterRed = 8;
 
-// This structure object corresponds to the 'green start push button'.
-myStruct grnButton;
-
-// This structure object corresponds to the 'red stop push button'.
-myStruct redButton;
-
-// These int variables will used for the two push buttons, 'button1'
-// corresponds to the 'green start push button' and 'button2 corresponds
-// to the 'red stop push button'. The value '2' corresponds to digital
-// input 2 and value '3' corresponds to digital input 3.
-int button1 = 2;
-int button2 = 3;
-
-// This int variable is the action of the pressing of button and it 
-// will be used to switch the state of a button.
-int toggle_on; 
-
-// This void function is used to setup important features
-// of the Arduino microprocessor board.
 void setup() {
-  Serial.begin(115200);
-
+  digitalWrite(slavePin, HIGH);
   SPI.begin();
   SPI.setClockDivider(SPI_CLOCK_DIV8);
-
-  grnButton.a = 7;
-  redButton.b = 8;
-
-  // This code below initializes the two push-button pins as an inputs.
-  // In addition, the 'attachInterrupt' function initializes the 
-  // interrupts for both pins.
-  pinMode(button1, INPUT);
-  attachInterrupt(digitalPinToInterrupt(button1), pin_ISR1, FALLING);
-  pinMode(button2, INPUT);
-  attachInterrupt(digitalPinToInterrupt(button2), pin_ISR2, RISING);
   
+  // This code initializes the push-button pin as an input.
+  pinMode(greenButton, INPUT);
+  // pinMode(redButton, INPUT);
+
+  attachInterrupt(digitalPinToInterrupt(greenButton), pin_ISR1, FALLING);
+  // attachInterrupt(digitalPinToInterrupt(redButton), pin_ISR2, FALLING);
 }
 
-// This void function acts just like the main function.
+// This function will send an integer value to slave board. In addition,
+// the function will use a delay to wait for a response from the slave board.
+int transferAndWait(const int masterCommand) {
+  int slaveReply = SPI.transfer(masterCommand);
+
+  delayMicroseconds(20);
+
+  return slaveReply;
+}
+
 void loop() {
-  // This if statement sends the 'green button' struct object using
-  // SPI to the MUC that uses the motor encoder code.
-  if (toggle_on == 1) {
-    digitalWrite(SS, LOW);
-    SPI_writeAnything(grnButton);
-    digitalWrite(SS, HIGH);
-
-    delay(1000);
+  if (toggle_on == true) {
+    digitalWrite(slavePin, LOW);
+    transferAndWait(masterGreen);
+    digitalWrite(slavePin, HIGH);
   }
-  // This if statement sends the 'green button' struct object using
-  // SPI to the MUC that uses the motor encoder code.
-  if(toggle_on == 0) {
-    digitalWrite(SS, LOW);
-    SPI_writeAnything(structComm2);
-    digitalWrite(SS, HIGH);
-  }  
+
+  /*if (toggle_off == true) {
+    digitalWrite(slavePin, LOW);
+    SPI.transfer(masterRed);
+    digitalWrite(slavePin, HIGH);
+  }*/
 }
 
-// This function serves as an interrupt for the 'green start' button.
+// This interrupt function is for the push button.
 void pin_ISR1() 
 {
   static unsigned long last_interrupt_time1 = 0;
 
+  // The 'millis' function returns the number of milliseconds since the
+  // Arduino board began running the current program.
   unsigned long interrupt_time1 = millis();
   
   // After a certain amount of time, it will toggle on.
   if (interrupt_time1 - last_interrupt_time1 > 200)
   {
-    toggle_on = 1;
+    toggle_on = true;
+    last_interrupt_time1 = interrupt_time1;
   }
-  
-  last_interrupt_time1 = interrupt_time1;
 }
 
-// This function serves as an interrupt for the 'red stop' button.
-void pin_ISR2()
+/*
+void pin_ISR2() 
 {
+   masterGreen = 0;
+  
   static unsigned long last_interrupt_time2 = 0;
 
-  // After a certain of time, it will toggle off. 
+  // The 'millis' function returns the number of milliseconds since the
+  // Arduino board began running the current program.
   unsigned long interrupt_time2 = millis();
   
+  // After a certain amount of time, it will toggle on.
   if (interrupt_time2 - last_interrupt_time2 > 200)
   {
-    toggle_on = 0;
+    toggle_off = true;
+    last_interrupt_time2 = interrupt_time2;
   }
-  
-  last_interrupt_time2 = interrupt_time2;
-}
-
+}*/
 
