@@ -15,7 +15,7 @@
 // hardware connected to this board. This program communicate with 
 // the Mega board. 
 
-// #include "NewPing.h"
+#include "NewPing.h"
 // #include "EMFSensor.h"
 // #include "CapacitiveSensor.h"
 // #include "ArrayLED.h"
@@ -32,14 +32,21 @@ int slavePin = 10;
 // The variable called 'US_ROUNDTRIP_MM' was created specifically so 
 // the sensor would return distance values in millimeters. Normally, 
 // the sensor would return values in centimeters.
-// #define US_ROUNDTRIP_MM 5.7
+#define US_ROUNDTRIP_MM 5.7
 
-// This constructor is for the UltraSonic Distance Sensor.
-// NewPing sonar(TRIGGER_PIN = 8, ECHO_PIN = 7, MAX_DISTANCE = 200);
+// These are the constructors for the UltraSonic Distance Sensors.
+NewPing sonarN(TRIGGER_PIN = 23, ECHO_PIN = 22, MAX_DISTANCE = 200);
+NewPing sonarW(TRIGGER_PIN = 25, ECHO_PIN = 24, MAX_DISTANCE = 200);
+NewPing sonarS(TRIGGER_PIN = 27, ECHO_PIN = 26, MAX_DISTANCE = 200);
+NewPing sonarE(TRIGGER_PIN = 29, ECHO_PIN = 28, MAX_DISTANCE = 200);
 
-// This function will return a True or False bool value depending on
-// if an obstacle is detected on the field.
-// bool read_Obstacle();
+// These functions will return a True or False bool value depending on
+// if an obstacle is detected on the field in front of the corresponding
+// Ultrasonic sensor.
+bool read_ObstacleN();
+bool read_ObstacleW();
+bool read_ObstacleS();
+bool read_ObstacleE();
 
 // This variable will be used to store an integer value sent by SPI from
 // the master. This value starts the entire sensor LED algorithm.
@@ -145,19 +152,18 @@ void loop() {
   
   // This if statement will execute the sensor algorithm.
   if(startAlgorithmSensorLED == 7) {
-    Serial.println("Test: successful transmission from master to slave.");
 
-    // startAlgorithmSensorLED = 0;
     /*
     // I (David) needs to write code that uses SPI to receive the current location
     // per the master Arduino board.
     strLoc = 
+    */
 
-  
     // This variable will be used to store whether or not there is an obstacle in
     // the upcoming one foot square section.
     bool scan4Obstacle;
 
+    /*
     // These four bool variables will be used by the corresponding
     // EMF sensor.
     bool voltDectN;
@@ -171,6 +177,8 @@ void loop() {
 
     // This variable will be used to communicate to the MCU that drives the motors.
     int currentCableConfig = 0;
+    */
+    
   
     // Use the read_Obstacle function to determine if there is an
     // obstacle.
@@ -233,13 +241,14 @@ void loop() {
   }
 }
 
-/*
-// This function is used to determine if there is an obstacle on the i
-bool read_Obstacle() {
+
+// This function is used to determine if there is an obstacle on the field direction
+// north of the robot. 
+bool read_ObstacleN() {
   // This variable stores the values calculated by the UltraSonic
   // hardware. In addition, the variable is initialized using the 
   // ping function from the NewPing class.
-  float sensorData = sonar.ping();
+  float sensorData = sonarN.ping();
 
   // This bool variable will be used to return a true value if the
   // the object is detected and a false variable no objectt is detected.
@@ -260,6 +269,88 @@ bool read_Obstacle() {
   }
 }
 
+// This function is used to determine if there is an obstacle on the field direction
+// north of the robot. 
+bool read_ObstacleW() {
+  // This variable stores the values calculated by the UltraSonic
+  // hardware. In addition, the variable is initialized using the 
+  // ping function from the NewPing class.
+  float sensorData = sonarW.ping();
+
+  // This bool variable will be used to return a true value if the
+  // the object is detected and a false variable no objectt is detected.
+  bool objDetected;
+
+  // This variable is used to store the actual distance value. 
+  float objDist;
+  objDist = sensorData / US_ROUNDTRIP_MM;
+
+  // This if statement uses a range in millimeters to determine if there
+  // is an object in the next square. The range and the sensor needs to 
+  // be tested and verified. 
+  if(objDist >= 50 || objDist <= 305) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+// This function is used to determine if there is an obstacle on the field direction
+// north of the robot. 
+bool read_ObstacleS() {
+  // This variable stores the values calculated by the UltraSonic
+  // hardware. In addition, the variable is initialized using the 
+  // ping function from the NewPing class.
+  float sensorData = sonarS.ping();
+
+  // This bool variable will be used to return a true value if the
+  // the object is detected and a false variable no objectt is detected.
+  bool objDetected;
+
+  // This variable is used to store the actual distance value. 
+  float objDist;
+  objDist = sensorData / US_ROUNDTRIP_MM;
+
+  // This if statement uses a range in millimeters to determine if there
+  // is an object in the next square. The range and the sensor needs to 
+  // be tested and verified. 
+  if(objDist >= 50 || objDist <= 305) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+// This function is used to determine if there is an obstacle on the field direction
+// north of the robot. 
+bool read_ObstacleE() {
+  // This variable stores the values calculated by the UltraSonic
+  // hardware. In addition, the variable is initialized using the 
+  // ping function from the NewPing class.
+  float sensorData = sonarE.ping();
+
+  // This bool variable will be used to return a true value if the
+  // the object is detected and a false variable no objectt is detected.
+  bool objDetected;
+
+  // This variable is used to store the actual distance value. 
+  float objDist;
+  objDist = sensorData / US_ROUNDTRIP_MM;
+
+  // This if statement uses a range in millimeters to determine if there
+  // is an object in the next square. The range and the sensor needs to 
+  // be tested and verified. 
+  if(objDist >= 50 || objDist <= 305) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+/*
 // This function will determine the configuration of the extension cord. There are 
 // six different configurations. Each configuration will be identified by an integer
 // variable (int values 1 - 6), look at the paper documentation for more information. 
