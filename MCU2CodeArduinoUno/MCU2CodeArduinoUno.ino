@@ -17,8 +17,8 @@
 
 #include "NewPing.h"
 // #include "EMFSensor.h"
-// #include "CapacitiveSensor.h"
 // #include "ArrayLED.h"
+
 #include <SPI.h>
 
 // This integer variable will be used by the switch statement located in
@@ -48,6 +48,9 @@ bool read_ObstacleW();
 bool read_ObstacleS();
 bool read_ObstacleE();
 
+// This integer variable will be used to store the movement direction.
+int moveDirection;
+
 // This variable will be used to store an integer value sent by SPI from
 // the master. This value starts the entire sensor LED algorithm.
 int startAlgorithmSensorLED;
@@ -56,23 +59,25 @@ int startAlgorithmSensorLED;
 // This function determines the configuration of the extension cable.
 int cableConfig(float, float, float, float);
 
-// These four constructors are for the four EMF Sensors. I labeled them 
-// as N=North, S=South, W=West, E=East.
+// These four constructors are for the four EMF Sensors. The variable
+// name represents the corresponding EMF by using these labels: N=North, 
+// S=South, W=West, and E=East.
 EMFSensor sensorN;
 EMFSensor sensorS;
 EMFSensor sensorW;
 EMFSensor sensorE;
 
-// This is the constructor for the capacitive sensor.
-CapacitiveSensor sensorC;
+// This integer variable will be used to store a value that represents the
+// current EMF cable configuration that is detected by the four EMF sensors. Int value
+// 12 = config W-E, 13 = config N-S, 14 = config N-E, 15 = config S-E, 16 = config W-S,
+// 17 = config N-W. The value will be used to communicate to the master via SPI.
+int EMF_SPI;
 
-// This int variable will be used to communicate an important value to the
-// master Arduino board. Value 1 = extension cable config West-East, value 2 = 
-// extension cable config North-South, value 3 = extension cable config North-East, 
-// value 4 = extension cable config South-East, value 5 = extension cable config 
-// West-South, value 6 = extension cable config North-West, value 6 = forward go, 
-// value 8 = stop motion, value 9 = obstacle detected, value 0 = error.
-int legendValueSPI;
+// This integer variable will be used to store a value that represents whether or
+// not there is an obstacle in the upcoming foot by foot square in the direction of
+// movement of the robot. Integer value 18 = Obstacle detected, integer value 19 = 
+// obstacle not detected.
+int obstacleSPI;
 
 // These string variables will be used for the LED features. The 'strLoc' is the current 
 // location of the robot, the 'colorLEDcurr' is the correct color per the output of the
@@ -101,6 +106,8 @@ void setup() {
   // The reason for initializing this integer variable is to ensure that sensor-LED
   // algorithm does not execute until the SPI command.
   startAlgorithmSensorLED = 0;
+
+  moveDirection = 0;
 }
 
 // This function is the SPI interrupt routine function.
@@ -114,23 +121,31 @@ ISR(SPI_STC_vect) {
       switchCommand = incomingInt;
       SPDR = 0;
       break;
-    // case 1:
-    // case 2:
-    // case 3:
-    // case 4:
-    // case 5:
-    // case 6:
-    case 7:
+    case 1:
       startAlgorithmSensorLED = incomingInt;
       // switchCommand = 0;
       break;
+    case 2:
+      moveDirection = switchCommand;
+      break;
+    case 3:
+      moveDirection = switchCommand;
+      break;
+    case 4:
+      moveDirection = switchCommand;
+      break;
+    case 5:
+      moveDirection = switchCommand;
+      break;
+    // case 6:    
+    // case 7:
     // case 8:
     // case 9:
     // case 10:
     // case 11:
     // case 12:
     // case 13:
-    // case 14:  
+    // case 14:
   }
 }
 
@@ -141,61 +156,75 @@ void loop() {
   if(digitalRead(slavePin) == HIGH) {
     switchCommand = 0;
   }
-
-  /*
-  Serial.println("Start algorithm variable is:");
-  Serial.println(startAlgorithmSensorLED);
-  Serial.println("Incoming int is:");
-  Serial.println(incomingInt);
-  delay(5000);
-  */
   
-  // This if statement will execute the sensor algorithm.
-  if(startAlgorithmSensorLED == 7) {
-
-    /*
-    // I (David) needs to write code that uses SPI to receive the current location
-    // per the master Arduino board.
-    strLoc = 
-    */
+  // This if statement will execute the sensor algorithm. The 'startAlgorithmSensorLED'
+  // will be initialized by a SPI command that is sent by the master MCU. 
+  if(startAlgorithmSensorLED == 1) {
 
     // This variable will be used to store whether or not there is an obstacle in
-    // the upcoming one foot square section.
+    // the upcoming one foot square section. It will be initialized with the return
+    // value of one of the four bool read_Obstacle functions. 
     bool scan4Obstacle;
 
     /*
-    // These four bool variables will be used by the corresponding
-    // EMF sensor.
+    // These four bool variables will be used by the corresponding EMF sensor. These 
+    // bool variables will store a true if any of the four EMF sensors detects an 
+    // EMF sensor. The false value represents that neither of the four EMF sensors
+    // have detected an EMF signal. These bool variables are initialized by the 
+    // return value of the 'checkRange' function used in the EMF sensor class. 
     bool voltDectN;
     bool voltDectE;
     bool voltDectS;
     bool voltDectW;
 
-    // This bool variable will be used to store whether or not there is insulation 
-    // below the layer of glass.
-    bool insulationDect;
-
     // This variable will be used to communicate to the MCU that drives the motors.
     int currentCableConfig = 0;
     */
-    
-  
-    // Use the read_Obstacle function to determine if there is an
-    // obstacle.
-    scan4Obstacle = read_Obstacle;
 
-    if(scan4Obstacle == false) {
+    // These four if statements will execute depending on the next immediate direction
+    // that the robot will take. This direction will be determined by receiving a SPI
+    // integer command from the master board. Int value 2 = move north, int value 3 =
+    // move west, int value 4 = move south, int value 5 = move east.   
+    if(moveDirection == 2) {
+      scan4Obstacle = read_ObstacleN();
+    }
+    if(moveDirection == 3) {
+      scan4Obstacle = read_ObstacleW();
+    }
+    if(moveDirection == 4) {
+      scan4Obstacle = read_ObstacleS();
+    }
+    if(moveDirection == 5) {
+      scan4Obstacle = read_ObstacleE();
+    }
+
+    // These if/else statements will communicate to the master MCU on whether or not
+    // there is an obstacle in the next foot by foot square. Integer value 12 = obstacle
+    // was detected, value 13 = obstacle not detected.  
+    if(scan4Obstacle == true) {
+      switchCommand = 13;
+    }
+    else {
+      switchCommand = 14;
+    }
+
+    if(startEMF == 6) {
+      /*
       voltDectN = false;
       voltDectE = false;
       voltDectS = false;
       voltDectW = false;
     
-      // This code uses all four EMF sensors to scan for a voltage.
+      // This code uses all four EMF sensors to scan for a voltage. This voltage should
+      // a single float value.
       sensorN.getVoltage();
       sensorE.getVoltage();
       sensorS.getVoltage();
       sensorW.getVoltage();
 
+      // These initialization statements return a true or false bool value depending on if the 
+      // detected voltage is within a certain range. The range is determined during testing on
+      // the field.
       voltDectN = sensorN.checkRange();
       voltDectE = sensorE.checkRange();
       voltDectS = sensorS.checkRange();
@@ -212,32 +241,9 @@ void loop() {
         legendValueSPI = cableConfig(sensorN, sensorE, sensorS, sensorW);
 
         // Send the SPI code value to the master, use the 'legendValueSPI' int variable.
-      
       }
-      else {
-        //  This code will determine whether or not there is insulation present at the current
-        // location of the robot. 
-      
-
-        // This if statement will determine whether or not there is insulation present below 
-        // the glass layer.
-        if( ) {
-        
-        }
-        // I (David) need to include the code for lighting the LED array at this point in
-        // code. Look at Jorge's implementation code and add it here.
-            
-      }
+      */
     }
-    else
-    {
-      // This else statement will send a variable to the MCU that drives the motors. The 
-      // purpose of variable is to adjust the path of the robot to avoid the obstacle.
-      legendValueSPI = 9;
-
-      // I (David) needs to write code using SPI to communicate to the master that an 
-      // obstacle has been detected.
-    }*/
   }
 }
 
@@ -270,7 +276,7 @@ bool read_ObstacleN() {
 }
 
 // This function is used to determine if there is an obstacle on the field direction
-// north of the robot. 
+// west of the robot. 
 bool read_ObstacleW() {
   // This variable stores the values calculated by the UltraSonic
   // hardware. In addition, the variable is initialized using the 
@@ -297,7 +303,7 @@ bool read_ObstacleW() {
 }
 
 // This function is used to determine if there is an obstacle on the field direction
-// north of the robot. 
+// south of the robot. 
 bool read_ObstacleS() {
   // This variable stores the values calculated by the UltraSonic
   // hardware. In addition, the variable is initialized using the 
@@ -324,7 +330,7 @@ bool read_ObstacleS() {
 }
 
 // This function is used to determine if there is an obstacle on the field direction
-// north of the robot. 
+// east of the robot. 
 bool read_ObstacleE() {
   // This variable stores the values calculated by the UltraSonic
   // hardware. In addition, the variable is initialized using the 
