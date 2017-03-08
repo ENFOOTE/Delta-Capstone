@@ -16,10 +16,16 @@
 // the Mega board. 
 
 #include "NewPing.h"
-// #include "EMFSensor.h"
-// #include "ArrayLED.h"
+#include "ArrayLED.h"
 
 #include <SPI.h>
+
+const unsigned int MAX_EMF_SIZE = 300;
+
+int EMF_valuesN[MAX_EMF_SIZE];
+int EMF_valuesW[MAX_EMF_SIZE];
+int EMF_valuesS[MAX_EMF_SIZE];
+int EMF_valuesE[MAX_EMF_SIZE];
 
 // This integer variable will be used by the switch statement located in
 // the SPI interrupt function.
@@ -55,22 +61,26 @@ int moveDirection;
 // the master. This value starts the entire sensor LED algorithm.
 int startAlgorithmSensorLED;
 
-/*
-// This function determines the configuration of the extension cable.
-int cableConfig(float, float, float, float);
+// These are four bool variables. Each bool value is determined by the 
+// corresponding EMF sensor and it represents if there is a strong or 
+// weak EMF signal near individual sensor.
+bool signalNorthEMF;
+bool signalWestEMF;
+bool signalSouthEMF;
+bool signalEastEMF;
 
-// These four constructors are for the four EMF Sensors. The variable
-// name represents the corresponding EMF by using these labels: N=North, 
-// S=South, W=West, and E=East.
-EMFSensor sensorN;
-EMFSensor sensorS;
-EMFSensor sensorW;
-EMFSensor sensorE;
+int analogPinNorth = 0;
+int analogPinWest = 1;
+int analogPinSouth = 2;
+int analogPinEast = 3;
+
+// This function determines the configuration of the extension cable.
+int cableConfig();
 
 // This integer variable will be used to store a value that represents the
 // current EMF cable configuration that is detected by the four EMF sensors. Int value
-// 12 = config W-E, 13 = config N-S, 14 = config N-E, 15 = config S-E, 16 = config W-S,
-// 17 = config N-W. The value will be used to communicate to the master via SPI.
+// 6 = config W-E, 7 = config N-S, 8 = config N-E, 9 = config S-E, 10 = config W-S,
+// 11 = config N-W. The value will be used to communicate to the master via SPI.
 int EMF_SPI;
 
 // This integer variable will be used to store a value that represents whether or
@@ -85,14 +95,15 @@ int obstacleSPI;
 string strLoc;
 string colorLEDcurr;
 
-// This is the class object instance of the LED using Jorge's LED code.
-ArrayLED mapObject;
-*/
-
 // This void function is used to setup important features
 // of the Arduino microprocessor board.
 void setup() {
   Serial.begin(115200);
+
+  pinMode(analogPinNorth, INPUT);
+  pinMode(analogPinWest, INPUT);
+  pinMode(analogPinSouth, INPUT);
+  pinMode(analogPinEast, INPUT);
 
   // This code enables master in and slave out.
   pinMode(MISO, OUTPUT);
@@ -156,30 +167,17 @@ void loop() {
   if(digitalRead(slavePin) == HIGH) {
     switchCommand = 0;
   }
-  
+
   // This if statement will execute the sensor algorithm. The 'startAlgorithmSensorLED'
   // will be initialized by a SPI command that is sent by the master MCU. 
   if(startAlgorithmSensorLED == 1) {
+    // This is the constructor of the array implementation code from Jorge.
+    ArrayLED mapObject;
 
     // This variable will be used to store whether or not there is an obstacle in
     // the upcoming one foot square section. It will be initialized with the return
     // value of one of the four bool read_Obstacle functions. 
     bool scan4Obstacle;
-
-    /*
-    // These four bool variables will be used by the corresponding EMF sensor. These 
-    // bool variables will store a true if any of the four EMF sensors detects an 
-    // EMF sensor. The false value represents that neither of the four EMF sensors
-    // have detected an EMF signal. These bool variables are initialized by the 
-    // return value of the 'checkRange' function used in the EMF sensor class. 
-    bool voltDectN;
-    bool voltDectE;
-    bool voltDectS;
-    bool voltDectW;
-
-    // This variable will be used to communicate to the MCU that drives the motors.
-    int currentCableConfig = 0;
-    */
 
     // These four if statements will execute depending on the next immediate direction
     // that the robot will take. This direction will be determined by receiving a SPI
@@ -209,40 +207,19 @@ void loop() {
     }
 
     if(startEMF == 6) {
-      /*
-      voltDectN = false;
-      voltDectE = false;
-      voltDectS = false;
-      voltDectW = false;
-    
-      // This code uses all four EMF sensors to scan for a voltage. This voltage should
-      // a single float value.
-      sensorN.getVoltage();
-      sensorE.getVoltage();
-      sensorS.getVoltage();
-      sensorW.getVoltage();
+      EMF_SPI = cableConfig();
 
-      // These initialization statements return a true or false bool value depending on if the 
-      // detected voltage is within a certain range. The range is determined during testing on
-      // the field.
-      voltDectN = sensorN.checkRange();
-      voltDectE = sensorE.checkRange();
-      voltDectS = sensorS.checkRange();
-      voltDectW = sensorW.checkRange();
-
-      // This if/statement determines whether or not any of the four EMF sensors detects a
-      // voltage. 
-      if(voltDectN == true || voltDectE == true || voltDectS == true || voltDectW == true) {
-        // I (David) need to include the code for lighting the LED array at this point in
-        // code. Look at Jorge's implementation code and add it here.
-
-        // The following code will determine if the extension cable is running in a straight 
-        // line or if there is a bend at this particular square.
-        legendValueSPI = cableConfig(sensorN, sensorE, sensorS, sensorW);
-
-        // Send the SPI code value to the master, use the 'legendValueSPI' int variable.
+      // The if statement will only execute when any of the six EMF configurations
+      // has been detected. The else statement will only execute when none of the 
+      // six EMF configurations has been detected.
+      if(EMF_SPI >= 7 && EMF_SPI <= 12) {
+        // This code uses the current location of the robot (the current location is
+        // determined by the mapping algorithm on the master MCU and sent by SPI 
+        // command). 
       }
-      */
+      else {
+        
+      }
     }
   }
 }
@@ -356,52 +333,124 @@ bool read_ObstacleE() {
   }
 }
 
-/*
 // This function will determine the configuration of the extension cord. There are 
 // six different configurations. Each configuration will be identified by an integer
-// variable (int values 1 - 6), look at the paper documentation for more information. 
-// This function will return the int value of the configuration.
-int cableConfig(float vN, float vE, float vS, float vW) {
-  // The 'expectedV float variable will be determined during testing of the EMF 
-  // sensors. This value is an expected voltage but the EMF sensors will rarely 
-  // if ever return this value. The programmer must determine a percent range of 
-  // acceptable voltage values.  
-  const float expectedV = 5.0;
-
-  const float minRangeV = 0.95 * expectV;
-  const float maxRangeV = 1.05 * expectV;
-
+// variable (int values 6 - 11), look at the paper documentation for more information. 
+// This function will return the int value of the configuration and this configuration
+// will be sent to the master MCU as a SPI command.
+int cableConfig() {
+  // This integer variable will be returned and it will represent the EMF 
+  // cable configuration.
   int configCableVal = 0;
+  
+  // These four integer variables will be used to keep track of how many saturation 
+  // samples for each corresponding EMF sensor.
+  int countEMF_N = 0;
+  int countEMF_W = 0;
+  int countEMF_S = 0;
+  int countEMF_E = 0;
 
-  // The following six if statements determine the configuration of the extension cable 
-  // at the current 1 square foot section. Config 1 is the cable running west to east. Config 2 
-  // is the cable running north to south. Config 3 is the cable running north to east. Config 4
-  // is the cable running south to east. Config 5 is the extension cable running west to south. 
-  // Config 6 is the extension cable running west to north.
-  if((minRangeV <= vW && vW <= maxRangeV) && (minRangeV <= vE && vE <= maxRangeV)) {
-    configCableVal = 1; 
+  // These for bool variables will be used to store a true/false value that depends
+  // on whether or not the EMF signal is strong for the corresponding EMF sensor.
+  bool strongEMFsignalN;
+  bool strongEMFsignalW;
+  bool strongEMFsignalS;
+  bool strongEMFsignalE;
+  
+  // This integer will be used by all four for loops that populate the EMF arrays for
+  // corresponding sensors.
+  unsigned int i;
+
+  // These four for loops will populate the EMF arrays with binary numbers that represent
+  // samples taken by EMF sensors and the onboard ADC of the Arduino.
+  for(i = 0; i < MAX_EMF_SIZE; i++) {
+    EMF_valuesN[i] = analogRead(analogPinNorth);
+  }
+  for(i = 0; i < MAX_EMF_SIZE; i++) {
+    EMF_valuesW[i] = analogRead(analogPinWest);
+  }
+  for(i = 0; i < MAX_EMF_SIZE; i++) {
+    EMF_valuesS[i] = analogRead(analogPinSouth);
+  }
+  for(i = 0; i < MAX_EMF_SIZE; i++) {
+    EMF_valuesE[i] = analogRead(analogPinEast);
   }
 
-  if((minRangeV <= vN && vN <= maxRangeV) && (minRangeV <= vS && vS <= maxRangeV)) {
-    configCableVal = 2; 
+
+  // These four for loops will record the number of times that the EMF sensor reaches
+  // saturation.
+  for(i = 0; i < MAX_EMF_SIZE; i++) {
+    if(EMF_valuesN[i] == 1023) {
+      countEMF_N++;
+    }
+  }
+  for(i = 0; i < MAX_EMF_SIZE; i++) {
+    if(EMF_valuesW[i] == 1023) {
+      countEMF_W++;
+    }
+  }
+  for(i = 0; i < MAX_EMF_SIZE; i++) {
+    if(EMF_valuesS[i] == 1023) {
+      countEMF_S++;
+    }
+  }
+  for(i = 0; i < MAX_EMF_SIZE; i++) {
+    if(EMF_valuesE[i] == 1023) {
+      countEMF_E++;
+    }
   }
 
-  if((minRangeV <= vN && vN <= maxRangeV) && (minRangeV <= vE && vE <= maxRangeV)) {
-    configCableVal = 3; 
+  // These if/else statements will determine if the EMF sensor detects a 
+  // strong EMF signal or a weak signal for the corresponding EMF sensor. 
+  if(countEMF_N >= /*some number*/){
+    strongEMFsignalN = true;
+  }
+  else {
+    strongEMFsignalN = false;
+  }
+  if(countEMF_W >= /*some number*/){
+     strongEMFsignalW = true;
+  }
+  else {
+    strongEMFsignalW = false;
+  }
+  if(countEMF_S >= /*some number*/){
+     strongEMFsignalS = true;
+  }
+  else {
+    strongEMFsignalS = false;
+  }
+  if(countEMF_E >= /*some number*/){
+     strongEMFsignalE = true;
+  }
+  else {
+    strongEMFsignalE = false;
   }
 
-    if((minRangeV <= vE && vE <= maxRangeV) && (minRangeV <= vS && vS <= maxRangeV)) {
-    configCableVal = 4; 
+  // These if statements will determine the EMF cable configuration.
+  if(strongEMFsignalW == true && strongEMFsignalE == true) {
+    configCableVal = 7;
   }
-
-    if((minRangeV <= vW && vW <= maxRangeV) && (minRangeV <= vS && vS <= maxRangeV)) {
-    configCableVal = 5; 
+  if(strongEMFsignalN == true && strongEMFsignalS == true) {
+    configCableVal = 8;
   }
-
-    if((minRangeV <= vW && vW <= maxRangeV) && (minRangeV <= vN && vN <= maxRangeV)) {
-    configCableVal = 6; 
+  if(strongEMFsignalN == true && strongEMFsignalE == true) {
+    configCableVal = 9;
   }
-
+  if(strongEMFsignalS == true && strongEMFsignalE == true) {
+    configCableVal = 10;
+  }
+  if(strongEMFsignalW == true && strongEMFsignalS == true) {
+    configCableVal = 11;
+  }
+  if(strongEMFsignalN == true && strongEMFsignalW == true) {
+    configCableVal = 12;
+  }
+  if(strongEMFsignalN == false && strongEMFsignalW == false && strongEMFsignalS == false && strongEMFsignalE == false) {
+    configCableVal = 13;
+  }
+  
   return configCableVal;
-*/
+}
+
 
