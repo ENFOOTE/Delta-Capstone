@@ -83,7 +83,7 @@ int speedMotor4;
 //shit
 // This integer variable will be determined during testing and 
 // troubleshooting of the robot on the test course.
-const float MAX_ERROR =1000;
+const float MAX_ERROR =100;
 const float speedBound = 25.0;
 
 // These variables will store the calculated gain PID values for 
@@ -109,10 +109,9 @@ int lowerBound;
 
 void setup() 
 {
-  Serial.begin(115200);
+ // Serial.begin(115200);
   
-  Serial.println("Adafruit Motorshield v2 - DC Motor test!");
-  Serial.println("Basic Encoder with PID control Test:");
+ 
 
   // This initializes the Adafruit Motorshield with a default
   // frequency 1.6 KHz. 
@@ -166,14 +165,14 @@ void setup()
   toggleDecimal = false;
 
   upperBound = speedMotor1 + speedBound;
-  lowerBound = speedMotor1 - speedBound;
+  lowerBound = speedMotor1 - speedBound -10;
 }
 
 // This void function acts just like the main function.
 void loop() 
 {
 
-  Serial.println("mainloop");
+  
   motorSlowestID = 0;
   motorFastestID = 0;
 
@@ -233,6 +232,7 @@ void loop()
 */
 
 int innerloop=0;
+
 while(((newPosition1+newPosition2+newPosition3+newPosition4)/4)<1400)
 
 {
@@ -247,7 +247,7 @@ innerloop++;
 
 
 
-//******************DEBUG*********************************
+/*/******************DEBUG*********************************
 //fuckthis
 Serial.println(" ");
 Serial.println("Loop Number"); Serial.println(innerloop);
@@ -284,7 +284,8 @@ Serial.println(sumErrM3);
 Serial.println(sumErrM4);
 
 
-//************************
+//**********************/
+
 
 
 
@@ -305,7 +306,7 @@ Serial.println(sumErrM4);
     }
   }
   motorSlowestID++;
-  
+    
   largestPos = posArray[0];
   for(int j = 1; j < MAX_MOTORS; j++) {
     if(posArray[j] > largestPos) {
@@ -321,7 +322,12 @@ Serial.println(sumErrM4);
 
   halfOfError = (largestPos - smallestPos) / 2;
   targetValue = smallestPos + halfOfError;
-
+ /* 
+  *  
+  Serial.println(" ");
+  Serial.println(targetValue);
+  Serial.println(" ");
+*/
   // This if statement is used to detect and correct every other 0.5
   // value calculated when calculating the targetValue position calculation.
   if((tempError = tempError - (long)tempError) == 0.5) {
@@ -349,6 +355,8 @@ Serial.println(sumErrM4);
   for(int i = 0; i < MAX_HISTORY; i++) {
      errHistM4[i+1] = errHistM4[i]; 
   }
+
+
 
   // This block of code inserts the current value of the error of each
   // motor into their corresponding error history array.
@@ -379,21 +387,21 @@ Serial.println(sumErrM4);
   gainMotor3 = sumErrM3 / (MAX_ERROR * 100);
   gainMotor4 = sumErrM4 / (MAX_ERROR * 100);
 
-  if(gainMotor1 == 0)
+  if(gainMotor1 == -0.00)
   {
-    gainMotor1=0;
+    gainMotor1=0.00;
   }
- if(gainMotor2 == 0)
+ if(gainMotor2 == -0.00)
   {
-    gainMotor2=0;
+    gainMotor2=0.00;
   }
-   if(gainMotor3 == 0)
+   if(gainMotor3 == -0.00)
   {
-    gainMotor3=0;
+    gainMotor3=0.00;
   }
-   if(gainMotor4 == 0)
+   if(gainMotor4 == -0.00)
   {
-    gainMotor4=0;
+    gainMotor4=0.00;
   }
 
 
