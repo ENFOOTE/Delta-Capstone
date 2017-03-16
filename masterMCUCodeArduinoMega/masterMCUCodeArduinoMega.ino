@@ -4,11 +4,23 @@
 // Programmer Two: Geovanni Hernandez
 // Programmer Three: Jorge Villalobos
 // Programmer Four: Eric Foote
-
 // Information: This program is being used to test a push button, the action
-// of pressing the push button should enable the SPI transfer of data. 
+// of pressing the push button should enable the SPI transfer of data. In
+// addition, this code has the GPIO communication network implemented. This
+// GPIO communication network will used to communicate between the Raspberry
+// Pi and the master Arduino MCU.
 
 #include <SPI.h>
+
+// These are the four input GPIO pins that will be used to receive a code from
+// Raspberry Pi. Use the digitalRead() function, it returns a 0 or 1 that depends
+// on if the input pin is in a HIGH state or a LOW state.
+const int inputPin1_GPIO = 22;
+const int inputPin2_GPIO = 23;
+const int inputPin3_GPIO = 24;
+const int inputPin4_GPIO = 25;
+
+// 
 
 // This int variable will be used for the push button, Button1
 // corresponds to 'send' button.
@@ -29,6 +41,13 @@ int masterGreen = 7;
 // int masterRed = 8;
 
 void setup() {
+  // This code will be used to enable the GPIO input pins that will receive a
+  // code from the Raspberry Pi.
+  pinMode(inputPin1_GPIO, INPUT);
+  pinMode(inputPin2_GPIO, INPUT);
+  pinMode(inputPin3_GPIO, INPUT);
+  pinMode(inputPin4_GPIO, INPUT);
+  
   digitalWrite(slavePin, HIGH);
   SPI.begin();
   SPI.setClockDivider(SPI_CLOCK_DIV8);
