@@ -98,7 +98,7 @@ void setup()
   speedMotor4 = 100;
 }
 */
-
+//Used for testing purposes
   speedMotor1 = 60;
   speedMotor2 = 60;
   speedMotor3 = 60;
