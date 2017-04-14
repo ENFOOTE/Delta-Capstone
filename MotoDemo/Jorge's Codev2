@@ -118,7 +118,7 @@ void loop() {
       String Part;
       int tick;
 
-  Serial.println("Please select mode [At Rest] or [Adjustment] or [Extend]") ;
+   Serial.println("Please select mode [At Rest] or [Adjustment] or [Extend]") ;
     while (Serial.available()==0) {             //Wait for user input.
   
   }
@@ -131,9 +131,10 @@ void loop() {
       pwm.setPWM(3,0,h);
       delay(25);
     }
-    pwm.setPWM(0,0,150);
-    pwm.setPWM(1,0,150);
-   }
+    
+pwm.setPWM(0,0,150);
+pwm.setPWM(1,0,150);
+
     for(int j=320;j>194;j--)
    {
     Serial.println(j);
@@ -407,6 +408,7 @@ if(Part == "base")
       delay(10);
       
       }
-}
+ }
+
 
 
