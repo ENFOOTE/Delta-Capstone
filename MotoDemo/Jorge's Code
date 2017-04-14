@@ -1,0 +1,626 @@
+
+// EE4391 EE Design II
+// Date created: March 24, 2017
+// Programmer One: Eric Foote
+// Programmer Two: Geovanni Hernandez
+// Programmer Three: Jorge Villalobos
+// Programmer Four: David S Vasquez
+// Information: This program will be used to demostrate the several working 
+// functions and abilities of the robot. 
+
+/* 
+RoboarmControl V0.3a
+25.5.2015
+Roboterarm Controlsoftware
+copyright 2015 by Juergen Lessner
+
+
+  PINOUT
+  ======
+  
+PCA9685 -> Arduino MEGA
+-----------------------
+SCL -> A21
+SDA -> A20
+VCC -> +5V
+GND -> GND
+
+Control Keyboard-> Arduino MEGA
+---------------------------
+1 -> D10
+2 -> D9
+3 -> D8
+4 -> D7
+5 -> D6
+6 -> D5
+7 -> D4
+8 -> D3
+9 -> D2
+10 -> +5V
+11 -> A19
+11 -> 10k Ohms Resistor -> GND 
+
+
+LCD2004 - Arduino MEGA 
+------------------------
+VCC -> +5V
+GND -> GND
+SDA -> A21 
+SCL -> A20
+
+PCA9685 -> Servos 
+-------------------
+0 = Servo0 / baseturn axis
+1 = Servos1 - (2 Servos) / shoulder axis
+2 = Servo2 / ellbow axis
+3 = Servo3 / wrist bow axis
+4 = Servo4 / wrist spin axis
+5 = Servo5 / fingers open - close
+
+
+*/
+
+// Libraries
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
+#include <Stepper.h>
+
+// fix definierte Servostellungen
+#define SERVOMIN  99 // this is the 'minimum' pulse length count (out of 4096) - tested  MG 995 = 95 absolute HW min
+#define SERVOMAX  455 // this is the 'maximum' pulse length count (out of 4096) - tested MG 995 = 460 absolute HW max
+
+#define SERVODEF 277 // servo default startposition 
+#define SERVO2DEF 207
+#define SERVO4DEF 99
+#define SERVO5DEF 320
+
+//MIN MAX positions 
+//open
+#define S5MIN 150
+//close
+#define S5MAX 310
+
+#define S4MIN 99
+#define S4MAX 455
+#define S3MIN 99
+#define S3MAX 455
+#define S2MIN 99
+//#define S2MAX 475
+#define S2MAX 445
+#define S1MIN 99
+#define S1MAX 455
+#define S0MIN 99
+#define S0MAX 455
+
+const int stepsPerRevolution = 200;  // change this to fit the number of steps per revolution
+
+// initialize the stepper library on pins 8 through 11:
+Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11);
+
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
+
+
+void setup() {
+myStepper.setSpeed(10);
+Serial.begin(9600);
+Serial.flush();
+}
+
+void loop() {
+ String argument5;
+ pwm.begin();
+ pwm.setPWMFreq(50);  // workingfreq MG995 50Hz
+ Serial.println("Please select mode for Arm [Movement] or [Turn]");
+   while (Serial.available()==0) {             //Wait for user input.
+  
+  }
+argument5=Serial.readString();
+Serial.println(argument5);
+ 
+if(argument5 == "Movement"){
+    String argument0;
+      String argument1;
+      String argument2;
+      String Part;
+      int tick;
+  
+  do{
+      
+  Serial.println("Please select mode [At Rest] or [Adjustment] or [Extend]") ;
+    while (Serial.available()==0) {             //Wait for user input.
+  
+  }
+  argument0=Serial.readString();
+  delay(100);
+  if(argument0 == "At Rest")
+  {
+    for(int h=220; h>169; h--)
+    {
+      pwm.setPWM(3,0,h);
+      delay(25);
+    }
+    
+    for(int i=300; i>149; i--)
+   {
+      Serial.println(i);
+    pwm.setPWM(0,0,i);
+    pwm.setPWM(1,0,i);
+    delay(100);
+    if(i==150)
+    {
+      Serial.println("URA!!!");
+    }
+   }
+    for(int j=320;j>194;j--)
+   {
+    Serial.println(j);
+    pwm.setPWM(2,0,j);
+    delay(100);
+    if(j==200)
+    {
+      Serial.println("URA!!!");
+    }
+   }
+    delay(1000);
+    pwm.setPWM(4,0,275);
+    delay(1000);
+    /*
+    pwm.setPWM(5,0,test);
+    delay(1000);
+    */
+  }
+  else if(argument0 == "Extend")
+  {
+    for(int q=170; 99<q; q--)
+    {
+      Serial.println("Part 0");
+      Serial.println(q);
+      pwm.setPWM(3,0,q);
+      delay(25);
+      if(q==100)
+      {
+          Serial.println("Ura!!!");
+      }
+    }
+    for(int x=150; x<171; x++)
+    {
+      Serial.println("Part 1");
+      Serial.println(x);
+    pwm.setPWM(0,0,x);
+    pwm.setPWM(1,0,x);
+    delay(25); 
+    if(x==170)
+    {
+      Serial.println("URA!!!");
+    }
+    }
+    for(int y=195; y<221; y++)
+    {
+      Serial.println("Part 2");
+      Serial.println(y);
+      pwm.setPWM(2,0,y);
+      delay(25);
+      if(y==220)
+      {
+        Serial.println("URA!!!");
+      }
+    }
+    for(int z=171; z<201; z++)
+    {
+      Serial.println("Part 3");
+      Serial.println(z);
+      pwm.setPWM(0,0,z);
+      pwm.setPWM(1,0,z);
+      delay(25);
+      if(z==200)
+      {
+        Serial.println("URA!!!");
+      }
+    }
+  
+    
+    for(int a=221; a<281; a++)
+    {
+      Serial.println("Part 4");
+      pwm.setPWM(2,0,a);
+      delay(25);
+      if(a==25)
+      {
+        Serial.println("URA!!!");
+      }
+    }
+    for(int b=200 ;b<251; b++)
+    {
+      Serial.println("Part 5");
+      pwm.setPWM(0,0,b);
+      pwm.setPWM(1,0,b);
+      delay(25);
+      if(b==250)
+      {
+        Serial.println("URA!!!");
+      }
+    }
+    for(int v=280; v<301; v++)
+    {
+      Serial.println("Part 5.5");
+      pwm.setPWM(2,0,v);
+      delay(25);
+      if(v==25)
+      {
+        Serial.println("URA!!!");
+      }
+    }
+    for(int c=250; c<301; c++)
+    {
+      Serial.println("Part 6");
+      pwm.setPWM(0,0,c);
+      pwm.setPWM(1,0,c);
+      delay(25);
+      if(c==250)
+      {
+        Serial.println("URA!!!");
+      }
+    }
+    for(int d=300; d<321; d++)
+    {
+      Serial.println("Part 7");
+      pwm.setPWM(2,0,d);
+      delay(25);
+      
+    }
+    for(int e=100;e<221;e++)
+   {
+    Serial.println("part 8");
+    pwm.setPWM(3,0,e);
+    delay(25);
+   }
+  }
+  
+  else if(argument0 == "Adjustment")
+    {
+         Serial.println("Please enter Arm part: "); //Prompt User for location.
+  while (Serial.available()==0) {             //Wait for user input.
+  
+  }
+  argument1=Serial.readString();                 //Read user input into location.
+  delay(100);
+  
+  if(argument1 == "fingers")
+{ 
+  Serial.println("Please Enter tick for position from 270(close) or 300(open)");   //Prompt User for color.
+  while (Serial.available()==0) {
+  }
+  argument2=Serial.readString();                    //Read user input into color.
+  tick=argument2.toInt();
+   while(tick < 270 or tick > 300)
+  {
+    Serial.println("ERROR Please Enter tick for position for 270(close) to 300(open)");
+    while (Serial.available()==0) {             //Wait for user input.
+
+  }
+    argument2=Serial.readString();                    
+    tick=argument2.toInt();
+  }
+}
+else if(argument1 == "base")
+{
+  Serial.println("Please Enter tick for position from 150(40°) to 450(180°)");   //Prompt User for color.
+  while (Serial.available()==0) {
+    
+  }
+  argument2=Serial.readString();                    //Read user input into color.
+  tick=argument2.toInt();
+ while(tick < 150 or tick > 450)
+  {
+    Serial.println("ERROR Please Enter tick for position from 150(40°) to 450(180°)");
+    while (Serial.available()==0) {             //Wait for user input.
+
+  }
+    argument2=Serial.readString();                    
+    tick=argument2.toInt();
+  }
+}
+else if(argument1 == "shoulder")
+{
+   Serial.println("Please Enter tick for position from 190(40°) to 455(180°)");   //Prompt User for color.
+  while (Serial.available()==0) {
+    
+  }
+  argument2=Serial.readString();                    //Read user input into color.
+  tick=argument2.toInt();
+ while(tick < 190 or tick > 455)
+  {
+    Serial.println("ERROR Please Enter tick for position from 190(40°) to 455(180°)");
+    while (Serial.available()==0) {             //Wait for user input.
+
+  }
+    argument2=Serial.readString();                    
+    tick=argument2.toInt();
+  }
+}
+else if(argument1 == "elbow")
+{
+   Serial.println("Please Enter tick for position from 100(0°) to 310(135°)");   //Prompt User for color.
+  while (Serial.available()==0) {
+    
+  }
+  argument2=Serial.readString();                    //Read user input into color.
+  tick=argument2.toInt();
+ while(tick < 100 or tick > 310)
+  {
+    Serial.println("ERROR Please Enter tick for position from 100(0°) to 310(135°)");
+    while (Serial.available()==0) {             //Wait for user input.
+
+  }
+    argument2=Serial.readString();                    
+    tick=argument2.toInt();
+  }
+}
+else if(argument1 == "wrist")
+{
+   Serial.println("Please Enter tick for position from 100(0°) to 445(180°)");   //Prompt User for color.
+  while (Serial.available()==0) {
+    
+  }
+  argument2=Serial.readString();                    //Read user input into color.
+  tick=argument2.toInt();
+ while(tick < 100 or tick > 445)
+  {
+    Serial.println("ERROR Please Enter tick for position from 100(0°) to 445(180°)");
+    while (Serial.available()==0) {             //Wait for user input.
+
+  }
+    argument2=Serial.readString();                    
+    tick=argument2.toInt();
+  }
+}
+    }
+  Serial.println("Part ");                    //Print out nicely formatted output.
+  Serial.println(argument1);
+  Serial.println("Tick");
+  Serial.println(argument2);
+
+Part=argument1;                              //Sets the variable from the user to the code.
+
+
+Serial.println(tick);                    //Check if the variable went through.
+Serial.println(Part);
+
+    
+    //calculating eventhandler infos
+
+if(Part == "base")
+      {
+
+      pwm.setPWM(0, 0, tick); //set position
+      pwm.setPWM(1, 0, tick);
+      delay(10);
+      }
+
+    if(Part == "shoulder")
+      {
+
+      pwm.setPWM(2, 0, tick); //set position
+      delay(10);
+     
+      }
+    if(Part == "elbow")
+      {
+
+      pwm.setPWM(3, 0, tick); //set position
+      delay(10);
+      }
+
+    if(Part == "wrist")
+      {
+
+      pwm.setPWM(4, 0, tick); //set position
+      delay(10);
+      }
+    if(Part == "fingers")
+      {
+
+      pwm.setPWM(5, 0, tick); //set position
+      delay(10);
+      
+      }
+ }
+ while(argument0 != "X");
+}
+
+  if(argument5 == "Turn")
+  {
+      char argument7;
+  String argument8;
+  String argument9;
+  long int Step[10];
+  int n=0;
+  do{
+
+  Serial.println("Which direction does the user want? North, West, East, or South?  ");
+  while(Serial.available()==0) {
+    
+  }
+  argument7=Serial.read();
+  Serial.println(argument7);
+  while(argument7!='N' && argument7!='E' && argument7!='W' && argument7!='S' && argument7!='X')
+  {
+    Serial.println("ERROR Please Enter a direction the user wants? North, West, East, or South?  ");
+    while(Serial.available()==0){
+      
+    }
+    argument7=Serial.read();
+  }
+
+if(argument7 == 'N')
+{
+  do{
+   Serial.println("Please Enter a step to go + for clockwise or - for counter clockwise  ");   //Prompt User for direction in steps and if finished then type done.
+  while (Serial.available()==0) {
+
+  }
+  argument8=Serial.readString();                    //Read user input into array.
+  Step[n]=argument8.toInt();
+  Serial.println(Step[n]);
+  while(Step[n] < -50  or Step[n] > 50)
+  {
+    Serial.println("ERROR Please Enter a step to go + for clockwise or - for counter clockwise  ");
+   while (Serial.available()==0) {             //Wait for user input.
+
+  }
+  argument8=Serial.readString();                    
+  Step[n]=argument8.toInt();
+  }      
+           
+  Serial.println("Step");
+
+                       //Sets the variable from the user to the code.
+Step[n]=argument8.toInt();
+  myStepper.step(Step[n]);                         //Does the action then the array adds up to the next space.
+  delay(500);
+  n++;
+  }
+  while(argument8 != "done");
+    for(long int m=n-2; m>=0; --m)
+    {
+      Serial.println(Step[m]);
+      myStepper.step(-Step[m]);                   //Reverses all previous actions
+      delay(1000);
+    }
+    
+ }
+  
+
+
+if(argument7 == 'W')
+  {
+    myStepper.step(-50);                      //Points to West
+    delay(500);
+     do{
+   Serial.println("Please Enter a step to go + for clockwise or - for counter clockwise  ");   //Prompt User for direction in steps and if finished then type done.
+  while (Serial.available()==0) {
+
+  }
+  argument8=Serial.readString();                    //Read user input into array.
+  Step[n]=argument8.toInt();
+  Serial.println(Step[n]);
+  while(Step[n] < -50  or Step[n] > 50)
+  {
+    Serial.println("ERROR Please Enter a step to go + for clockwise or - for counter clockwise  ");
+   while (Serial.available()==0) {             //Wait for user input.
+
+  }
+  argument8=Serial.readString();                    
+  Step[n]=argument8.toInt();
+  }      
+           
+  Serial.println("Step");
+
+                       //Sets the variable from the user to the code.
+Step[n]=argument8.toInt();
+  myStepper.step(Step[n]);                       //Does the action then the array adds up to the next space.
+  delay(500);
+  n++;
+  }
+  while(argument8 != "done");
+    for(long int m=n-2; m>=0; --m)
+    {
+      Serial.println(Step[m]);
+      myStepper.step(-Step[m]);               //Reverses all previous actions
+      delay(1000);
+    }
+    myStepper.step(50);                       //Returns to North
+    delay(500);
+  
+}
+
+if(argument7 == 'E')
+  {
+        myStepper.step(50);
+    delay(500);
+     do{
+   Serial.println("Please Enter a step to go + for clockwise or - for counter clockwise  ");   //Prompt User for direction in steps and if finished then type done.
+  while (Serial.available()==0) {
+
+  }
+  argument8=Serial.readString();                   //Read user input into array.
+  Step[n]=argument8.toInt();
+  Serial.println(Step[n]);
+  while(Step[n] < -50  or Step[n] > 50)
+  {
+    Serial.println("ERROR Please Enter a step to go + for clockwise or - for counter clockwise  ");
+   while (Serial.available()==0) {             //Wait for user input.
+
+  }
+  argument8=Serial.readString();                    
+  Step[n]=argument8.toInt();
+  }      
+           
+  Serial.println("Step");
+
+                       //Sets the variable from the user to the code.
+Step[n]=argument8.toInt();
+  myStepper.step(Step[n]);                      //Does the action then the array adds up to the next space.
+  delay(500);
+  n++;
+  }
+  while(argument8 != "done");
+    for(long int m=n-2; m>=0; --m)
+    {
+      Serial.println(Step[m]);
+      myStepper.step(-Step[m]);               //Reverses all previous actions
+      delay(1000);
+    }
+    myStepper.step(-50);                      //Returns to North
+    delay(500);
+  
+}
+  
+if(argument7 == 'S')
+  {
+      myStepper.step(-100);                       //Points to the South
+    delay(500);
+     do{
+   Serial.println("Please Enter a step to go + for clockwise or - for counter clockwise  ");   //Prompt User for direction in steps and if finished then type done.
+  while (Serial.available()==0) {
+
+  }
+  argument8=Serial.readString();                    //Read user input into array.
+  Step[n]=argument8.toInt();
+  Serial.println(Step[n]);
+  while(Step[n] < -50  or Step[n] > 50)
+  {
+    Serial.println("ERROR Please Enter a step to go + for clockwise or - for counter clockwise  ");
+   while (Serial.available()==0) {             //Wait for user input.
+
+  }
+  argument8=Serial.readString();                    
+  Step[n]=argument8.toInt();
+  }      
+           
+  Serial.println("Step");
+
+                       //Sets the variable from the user to the code.
+Step[n]=argument8.toInt();
+  myStepper.step(Step[n]);                //Does the action then the array adds up to the next space.
+  delay(500);
+  n++;
+  }
+  while(argument8 != "done");
+    for(long int m=n-2; m>=0; --m)
+    {
+      Serial.println(Step[m]);
+      myStepper.step(-Step[m]);         //Reverses all previous actions
+      delay(1000);
+    }
+    myStepper.step(100);                //Returns to North
+    delay(500);
+  
+}
+ 
+  }
+  while(argument7!='X');
+  }
+}
+
