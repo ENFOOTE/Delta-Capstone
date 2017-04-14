@@ -1,13 +1,3 @@
-
-// EE4391 EE Design II
-// Date created: March 24, 2017
-// Programmer One: Eric Foote
-// Programmer Two: Geovanni Hernandez
-// Programmer Three: Jorge Villalobos
-// Programmer Four: David S Vasquez
-// Information: This program will be used to demostrate the several working 
-// functions and abilities of the robot. 
-
 /* 
 RoboarmControl V0.3a
 25.5.2015
@@ -63,7 +53,6 @@ PCA9685 -> Servos
 // Libraries
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
-#include <Stepper.h>
 
 // fix definierte Servostellungen
 #define SERVOMIN  99 // this is the 'minimum' pulse length count (out of 4096) - tested  MG 995 = 95 absolute HW min
@@ -92,41 +81,43 @@ PCA9685 -> Servos
 #define S0MIN 99
 #define S0MAX 455
 
-const int stepsPerRevolution = 200;  // change this to fit the number of steps per revolution
 
-// initialize the stepper library on pins 8 through 11:
-Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11);
+
+
+
+// reset all buttons
+
+
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 
 
 void setup() {
-myStepper.setSpeed(10);
+  // print on display
+ 
+  //serial Debug
+  //Serial.begin(9600);
+  
 Serial.begin(9600);
+
 Serial.flush();
+  
+  // Pin D19 = int4
+
+
 }
 
 void loop() {
- String argument5;
+ 
  pwm.begin();
  pwm.setPWMFreq(50);  // workingfreq MG995 50Hz
- Serial.println("Please select mode for Arm [Movement] or [Turn]");
-   while (Serial.available()==0) {             //Wait for user input.
-  
-  }
-argument5=Serial.readString();
-Serial.println(argument5);
- 
-if(argument5 == "Movement"){
-    String argument0;
+      String argument0;
       String argument1;
       String argument2;
       String Part;
       int tick;
-  
-  do{
-      
+
   Serial.println("Please select mode [At Rest] or [Adjustment] or [Extend]") ;
     while (Serial.available()==0) {             //Wait for user input.
   
@@ -140,17 +131,8 @@ if(argument5 == "Movement"){
       pwm.setPWM(3,0,h);
       delay(25);
     }
-    
-    for(int i=300; i>149; i--)
-   {
-      Serial.println(i);
-    pwm.setPWM(0,0,i);
-    pwm.setPWM(1,0,i);
-    delay(100);
-    if(i==150)
-    {
-      Serial.println("URA!!!");
-    }
+    pwm.setPWM(0,0,150);
+    pwm.setPWM(1,0,150);
    }
     for(int j=320;j>194;j--)
    {
@@ -425,202 +407,6 @@ if(Part == "base")
       delay(10);
       
       }
- }
- while(argument0 != "X");
 }
 
-  if(argument5 == "Turn")
-  {
-      char argument7;
-  String argument8;
-  String argument9;
-  long int Step[10];
-  int n=0;
-  do{
-
-  Serial.println("Which direction does the user want? North, West, East, or South?  ");
-  while(Serial.available()==0) {
-    
-  }
-  argument7=Serial.read();
-  Serial.println(argument7);
-  while(argument7!='N' && argument7!='E' && argument7!='W' && argument7!='S' && argument7!='X')
-  {
-    Serial.println("ERROR Please Enter a direction the user wants? North, West, East, or South?  ");
-    while(Serial.available()==0){
-      
-    }
-    argument7=Serial.read();
-  }
-
-if(argument7 == 'N')
-{
-  do{
-   Serial.println("Please Enter a step to go + for clockwise or - for counter clockwise  ");   //Prompt User for direction in steps and if finished then type done.
-  while (Serial.available()==0) {
-
-  }
-  argument8=Serial.readString();                    //Read user input into array.
-  Step[n]=argument8.toInt();
-  Serial.println(Step[n]);
-  while(Step[n] < -50  or Step[n] > 50)
-  {
-    Serial.println("ERROR Please Enter a step to go + for clockwise or - for counter clockwise  ");
-   while (Serial.available()==0) {             //Wait for user input.
-
-  }
-  argument8=Serial.readString();                    
-  Step[n]=argument8.toInt();
-  }      
-           
-  Serial.println("Step");
-
-                       //Sets the variable from the user to the code.
-Step[n]=argument8.toInt();
-  myStepper.step(Step[n]);                         //Does the action then the array adds up to the next space.
-  delay(500);
-  n++;
-  }
-  while(argument8 != "done");
-    for(long int m=n-2; m>=0; --m)
-    {
-      Serial.println(Step[m]);
-      myStepper.step(-Step[m]);                   //Reverses all previous actions
-      delay(1000);
-    }
-    
- }
-  
-
-
-if(argument7 == 'W')
-  {
-    myStepper.step(-50);                      //Points to West
-    delay(500);
-     do{
-   Serial.println("Please Enter a step to go + for clockwise or - for counter clockwise  ");   //Prompt User for direction in steps and if finished then type done.
-  while (Serial.available()==0) {
-
-  }
-  argument8=Serial.readString();                    //Read user input into array.
-  Step[n]=argument8.toInt();
-  Serial.println(Step[n]);
-  while(Step[n] < -50  or Step[n] > 50)
-  {
-    Serial.println("ERROR Please Enter a step to go + for clockwise or - for counter clockwise  ");
-   while (Serial.available()==0) {             //Wait for user input.
-
-  }
-  argument8=Serial.readString();                    
-  Step[n]=argument8.toInt();
-  }      
-           
-  Serial.println("Step");
-
-                       //Sets the variable from the user to the code.
-Step[n]=argument8.toInt();
-  myStepper.step(Step[n]);                       //Does the action then the array adds up to the next space.
-  delay(500);
-  n++;
-  }
-  while(argument8 != "done");
-    for(long int m=n-2; m>=0; --m)
-    {
-      Serial.println(Step[m]);
-      myStepper.step(-Step[m]);               //Reverses all previous actions
-      delay(1000);
-    }
-    myStepper.step(50);                       //Returns to North
-    delay(500);
-  
-}
-
-if(argument7 == 'E')
-  {
-        myStepper.step(50);
-    delay(500);
-     do{
-   Serial.println("Please Enter a step to go + for clockwise or - for counter clockwise  ");   //Prompt User for direction in steps and if finished then type done.
-  while (Serial.available()==0) {
-
-  }
-  argument8=Serial.readString();                   //Read user input into array.
-  Step[n]=argument8.toInt();
-  Serial.println(Step[n]);
-  while(Step[n] < -50  or Step[n] > 50)
-  {
-    Serial.println("ERROR Please Enter a step to go + for clockwise or - for counter clockwise  ");
-   while (Serial.available()==0) {             //Wait for user input.
-
-  }
-  argument8=Serial.readString();                    
-  Step[n]=argument8.toInt();
-  }      
-           
-  Serial.println("Step");
-
-                       //Sets the variable from the user to the code.
-Step[n]=argument8.toInt();
-  myStepper.step(Step[n]);                      //Does the action then the array adds up to the next space.
-  delay(500);
-  n++;
-  }
-  while(argument8 != "done");
-    for(long int m=n-2; m>=0; --m)
-    {
-      Serial.println(Step[m]);
-      myStepper.step(-Step[m]);               //Reverses all previous actions
-      delay(1000);
-    }
-    myStepper.step(-50);                      //Returns to North
-    delay(500);
-  
-}
-  
-if(argument7 == 'S')
-  {
-      myStepper.step(-100);                       //Points to the South
-    delay(500);
-     do{
-   Serial.println("Please Enter a step to go + for clockwise or - for counter clockwise  ");   //Prompt User for direction in steps and if finished then type done.
-  while (Serial.available()==0) {
-
-  }
-  argument8=Serial.readString();                    //Read user input into array.
-  Step[n]=argument8.toInt();
-  Serial.println(Step[n]);
-  while(Step[n] < -50  or Step[n] > 50)
-  {
-    Serial.println("ERROR Please Enter a step to go + for clockwise or - for counter clockwise  ");
-   while (Serial.available()==0) {             //Wait for user input.
-
-  }
-  argument8=Serial.readString();                    
-  Step[n]=argument8.toInt();
-  }      
-           
-  Serial.println("Step");
-
-                       //Sets the variable from the user to the code.
-Step[n]=argument8.toInt();
-  myStepper.step(Step[n]);                //Does the action then the array adds up to the next space.
-  delay(500);
-  n++;
-  }
-  while(argument8 != "done");
-    for(long int m=n-2; m>=0; --m)
-    {
-      Serial.println(Step[m]);
-      myStepper.step(-Step[m]);         //Reverses all previous actions
-      delay(1000);
-    }
-    myStepper.step(100);                //Returns to North
-    delay(500);
-  
-}
- 
-  }
-  while(argument7!='X');
-  }
-}
 
