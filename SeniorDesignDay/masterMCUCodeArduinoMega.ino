@@ -84,6 +84,8 @@ void loop() {
   String argument1;
   String argument2;
   String Part;
+
+  String exitArmMode;
   
   int tick;
   
@@ -114,7 +116,8 @@ void loop() {
     Serial.println(Bearing);
     delay(100);
     
-    if(Bearing == '8' || Bearing == '2' || Bearing == '4' || Bearing == '6' || Bearing == '5' || Bearing == '7' || Bearing == '9') {
+    if(Bearing == '8' || Bearing == '2' || Bearing == '4' || Bearing == '6' ||
+       Bearing == '5' || Bearing == '7' || Bearing == '9') {
       set_Direction(Bearing);
     }    
 
@@ -132,12 +135,13 @@ void loop() {
     while(Serial.available() == 0) {
     }
     argument0 = Serial.readString();
+    exitArmMode = argument0;
     delay(100);
   
     if(argument0 == "At Rest") {
       for(int h = 220; h > 169; h--) {
         pwm.setPWM(3,0,h);
-        delay(25);
+        delay(5);
     }
     
     pwm.setPWM(0, 0, 150);
@@ -147,17 +151,17 @@ void loop() {
       Serial.println(j);
       pwm.setPWM(2,0,j);
     
-      delay(100);
+      delay(5);
       if(j==200) {
         Serial.println("URA!!!");
       }
     }
     
-    delay(1000);
+    delay(500);
     
     pwm.setPWM(4, 0, 275);
     
-    delay(1000);
+    delay(500);
     }
     else if(argument0 == "Extend") {
       for(int q = 170; 99 < q; q--) {
@@ -166,7 +170,7 @@ void loop() {
         
         pwm.setPWM(3, 0, q);
         
-        delay(25);
+        delay(5);
         if(q == 100) {
           Serial.println("Ura!!!");
         }
@@ -178,7 +182,7 @@ void loop() {
         pwm.setPWM(0,0,x);
         pwm.setPWM(1,0,x);
         
-        delay(25); 
+        delay(5); 
         if(x == 170) {
           Serial.println("URA!!!");
         }
@@ -189,7 +193,7 @@ void loop() {
         
         pwm.setPWM(2,0,y);
         
-        delay(25);
+        delay(5);
         if(y == 220) {
           Serial.println("URA!!!");
         }
@@ -201,7 +205,7 @@ void loop() {
         pwm.setPWM(0, 0, z);
         pwm.setPWM(1, 0, z);
         
-        delay(25);
+        delay(5);
         if(z == 200) {
           Serial.println("URA!!!");
         }
@@ -211,7 +215,7 @@ void loop() {
         
         pwm.setPWM(2, 0, a);
         
-        delay(25);
+        delay(5);
         if(a == 25) {
           Serial.println("URA!!!");
         }
@@ -223,7 +227,7 @@ void loop() {
         pwm.setPWM(0, 0, b);
         pwm.setPWM(1, 0, b);
         
-        delay(25);
+        delay(5);
         if(b == 250) {
           Serial.println("URA!!!");
         }
@@ -233,7 +237,7 @@ void loop() {
         
         pwm.setPWM(2, 0, v);
         
-        delay(25);
+        delay(5);
         if(v == 25) {
           Serial.println("URA!!!");
         }
@@ -244,7 +248,7 @@ void loop() {
         pwm.setPWM(0, 0, c);
         pwm.setPWM(1, 0, c);
         
-        delay(25);
+        delay(5);
         if(c==250) {
           Serial.println("URA!!!");
         }
@@ -254,14 +258,14 @@ void loop() {
         
         pwm.setPWM(2, 0, d);
         
-        delay(25);
+        delay(5);
       }
       for(int e = 100; e < 221; e++) {
         Serial.println("part 8");
         
         pwm.setPWM(3, 0, e);
         
-        delay(25);
+        delay(5);
       }
     }
     else if(argument0 == "Adjustment") {
@@ -270,6 +274,7 @@ void loop() {
       while (Serial.available() == 0) {
       }
       argument1 = Serial.readString();
+      exitArmMode = argument1;
       delay(100);
       
       if(argument1 == "fingers") {
@@ -277,13 +282,15 @@ void loop() {
         while (Serial.available() == 0) {
         }
         argument2 = Serial.readString();
+        exitArmMode = argument2;
         tick = argument2.toInt();
       
         while(tick < 270 or tick > 300) {
           Serial.println("ERROR Please Enter tick for position for 270(close) to 300(open)");
           while (Serial.available() == 0) {
           }
-          argument2 = Serial.readString();                    
+          argument2 = Serial.readString();
+          exitArmMode = argument2;                 
           tick = argument2.toInt();
         }
       }
@@ -292,6 +299,7 @@ void loop() {
         while (Serial.available() == 0) {
         }
         argument2 = Serial.readString();
+        exitArmMode = argument2;
         tick = argument2.toInt();
       
         while(tick < 150 or tick > 450) {
@@ -299,7 +307,8 @@ void loop() {
     
           while (Serial.available() == 0) {
           }
-          argument2 = Serial.readString();                    
+          argument2 = Serial.readString();
+          exitArmMode = argument2;                 
           tick = argument2.toInt();
         }
       }
@@ -308,13 +317,15 @@ void loop() {
         while(Serial.available() == 0) {
         }
         argument2 = Serial.readString();
+        exitArmMode = argument2;
         tick = argument2.toInt();
         
         while(tick < 190 or tick > 455) {
           Serial.println("ERROR Please Enter tick for position from 190(40°) to 455(180°)");
           while (Serial.available() == 0) {
           }
-          argument2 = Serial.readString();                    
+          argument2 = Serial.readString();
+          exitArmMode = argument2;               
           tick = argument2.toInt();
         }
       }
@@ -323,13 +334,15 @@ void loop() {
         while (Serial.available() == 0) {  
         }
         argument2 = Serial.readString();
+        exitArmMode = argument2;
         tick = argument2.toInt();
     
         while(tick < 100 or tick > 310) {
           Serial.println("ERROR Please Enter tick for position from 100(0°) to 310(135°)");
           while(Serial.available() == 0) {
           }
-          argument2 = Serial.readString();                    
+          argument2 = Serial.readString();
+          exitArmMode = argument2;                  
           tick = argument2.toInt();
         }
       }
@@ -338,12 +351,14 @@ void loop() {
         while(Serial.available() == 0) {
         }
         argument2 = Serial.readString();
+        exitArmMode = argument2;
         tick = argument2.toInt();
         while(tick < 100 or tick > 445) {
           Serial.println("ERROR Please Enter tick for position from 100(0°) to 445(180°)");
           while(Serial.available() == 0) {
           }
-          argument2 = Serial.readString();                    
+          argument2 = Serial.readString();
+          exitArmMode = argument2;                
           tick = argument2.toInt();
         }
       }
@@ -365,23 +380,23 @@ void loop() {
     if(Part == "base") {
       pwm.setPWM(0, 0, tick);
       pwm.setPWM(1, 0, tick);
-      delay(10);
+      delay(5);
     }
     if(Part == "shoulder") {
       pwm.setPWM(2, 0, tick);
-      delay(10); 
+      delay(5); 
     }
     if(Part == "elbow") {
       pwm.setPWM(3, 0, tick);
-      delay(10);
+      delay(5);
     }
     if(Part == "wrist") {
       pwm.setPWM(4, 0, tick);
-      delay(10);
+      delay(5);
     }
     if(Part == "fingers") {
       pwm.setPWM(5, 0, tick);
-      delay(10);
+      delay(5);
     }
     
     // This argument will be used to exit this while loop.
@@ -389,10 +404,10 @@ void loop() {
 
     Serial.println("Robotic arm functionality enabled.");
 
-    delay(2500);
+    delay(500);
 
-    // exitArg = Serial.readString();
-    if(argument0 == 'q' || argument1 == 'q' || argument2 == 'q') {
+    if(exitArmMode == "q") {
+      pwm.reset();
       Serial.println("Robotic arm functionality has ended.");
       break;
     }
