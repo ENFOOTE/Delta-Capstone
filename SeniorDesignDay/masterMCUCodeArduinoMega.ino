@@ -1,5 +1,5 @@
 // EE4391 EE Design II
-// Date created: March 24, 2017
+// Date created: April 19, 2017
 // Programmer One: Eric Foote
 // Programmer Two: Geovanni Hernandez
 // Programmer Three: Jorge Villalobos
@@ -62,8 +62,8 @@ void setup() {
   myMotor3->setSpeed(0);
   myMotor4->setSpeed(0);
 
-  // pwm.begin();
-  // pwm.setPWMFreq(60);
+  //pwm.begin();
+  //pwm.setPWMFreq(60);
 
   // Serial.flush();
 
@@ -77,8 +77,8 @@ void setup() {
 // the robotic arm. If time allows it, this code will execute the EMF and
 // ultrasonic sensors.
 void loop() {
-  // pwm.begin();
-  // pwm.setPWMFreq(50);  // workingfreq MG995 50Hz
+  pwm.begin();
+  pwm.setPWMFreq(50);  // workingfreq MG995 50Hz
       
   String argument0;
   String argument1;
@@ -125,7 +125,6 @@ void loop() {
     }
   }
 
-  /*
   // This while loop will be used to execute the robotic arm functionality.
   while(inputArg == "r" || inputArg == "R") {
     Serial.println("Please select mode [At Rest] or [Adjustment] or [Extend]") ;
@@ -392,13 +391,12 @@ void loop() {
 
     delay(2500);
 
-    exitArg = Serial.readString();
-    if(exitArg == "q") {
+    // exitArg = Serial.readString();
+    if(argument0 == 'q' || argument1 == 'q' || argument2 == 'q') {
       Serial.println("Robotic arm functionality has ended.");
       break;
     }
   }
-  */
 }
 
 void set_Direction(char moveDirection) {
