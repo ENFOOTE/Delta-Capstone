@@ -1,93 +1,10 @@
-/* 
-RoboarmControl V0.3a
-25.5.2015
-Roboterarm Controlsoftware
-copyright 2015 by Juergen Lessner
 
-
-  PINOUT
-  ======
-  
-PCA9685 -> Arduino MEGA
------------------------
-SCL -> A21
-SDA -> A20
-VCC -> +5V
-GND -> GND
-
-Control Keyboard-> Arduino MEGA
----------------------------
-1 -> D10
-2 -> D9
-3 -> D8
-4 -> D7
-5 -> D6
-6 -> D5
-7 -> D4
-8 -> D3
-9 -> D2
-10 -> +5V
-11 -> A19
-11 -> 10k Ohms Resistor -> GND 
-
-
-LCD2004 - Arduino MEGA 
-------------------------
-VCC -> +5V
-GND -> GND
-SDA -> A21 
-SCL -> A20
-
-PCA9685 -> Servos 
--------------------
-0 = Servo0 / baseturn axis
-1 = Servos1 - (2 Servos) / shoulder axis
-2 = Servo2 / ellbow axis
-3 = Servo3 / wrist bow axis
-4 = Servo4 / wrist spin axis
-5 = Servo5 / fingers open - close
-
-
-*/
 
 // Libraries
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
 // fix definierte Servostellungen
-#define SERVOMIN  99 // this is the 'minimum' pulse length count (out of 4096) - tested  MG 995 = 95 absolute HW min
-#define SERVOMAX  455 // this is the 'maximum' pulse length count (out of 4096) - tested MG 995 = 460 absolute HW max
-
-#define SERVODEF 277 // servo default startposition 
-#define SERVO2DEF 207
-#define SERVO4DEF 99
-#define SERVO5DEF 320
-
-//MIN MAX positions 
-//open
-#define S5MIN 150
-//close
-#define S5MAX 310
-
-#define S4MIN 99
-#define S4MAX 455
-#define S3MIN 99
-#define S3MAX 455
-#define S2MIN 99
-//#define S2MAX 475
-#define S2MAX 445
-#define S1MIN 99
-#define S1MAX 455
-#define S0MIN 99
-#define S0MAX 455
-
-
-
-
-
-// reset all buttons
-
-
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
@@ -271,10 +188,10 @@ pwm.setPWM(1,0,150);
   
   if(argument1 == "fingers")
 { 
-  Serial.println("Please Enter tick for position from 270(close) or 300(open)");   //Prompt User for color.
+  Serial.println("Please Enter tick for position from 270(close) or 300(open)");   //Prompt User for tick.
   while (Serial.available()==0) {
   }
-  argument2=Serial.readString();                    //Read user input into color.
+  argument2=Serial.readString();                    //Read user input into tick.
   tick=argument2.toInt();
    while(tick < 270 or tick > 300)
   {
@@ -288,11 +205,11 @@ pwm.setPWM(1,0,150);
 }
 else if(argument1 == "base")
 {
-  Serial.println("Please Enter tick for position from 150(40°) to 450(180°)");   //Prompt User for color.
+  Serial.println("Please Enter tick for position from 150(40°) to 450(180°)");   //Prompt User for tick.
   while (Serial.available()==0) {
     
   }
-  argument2=Serial.readString();                    //Read user input into color.
+  argument2=Serial.readString();                    //Read user input into tick.
   tick=argument2.toInt();
  while(tick < 150 or tick > 450)
   {
@@ -306,11 +223,11 @@ else if(argument1 == "base")
 }
 else if(argument1 == "shoulder")
 {
-   Serial.println("Please Enter tick for position from 190(40°) to 455(180°)");   //Prompt User for color.
+   Serial.println("Please Enter tick for position from 190(40°) to 455(180°)");   //Prompt User for tick.
   while (Serial.available()==0) {
     
   }
-  argument2=Serial.readString();                    //Read user input into color.
+  argument2=Serial.readString();                    //Read user input into tick.
   tick=argument2.toInt();
  while(tick < 190 or tick > 455)
   {
@@ -324,11 +241,11 @@ else if(argument1 == "shoulder")
 }
 else if(argument1 == "elbow")
 {
-   Serial.println("Please Enter tick for position from 100(0°) to 310(135°)");   //Prompt User for color.
+   Serial.println("Please Enter tick for position from 100(0°) to 310(135°)");   //Prompt User for tick.
   while (Serial.available()==0) {
     
   }
-  argument2=Serial.readString();                    //Read user input into color.
+  argument2=Serial.readString();                    //Read user input into tick.
   tick=argument2.toInt();
  while(tick < 100 or tick > 310)
   {
@@ -342,11 +259,11 @@ else if(argument1 == "elbow")
 }
 else if(argument1 == "wrist")
 {
-   Serial.println("Please Enter tick for position from 100(0°) to 445(180°)");   //Prompt User for color.
+   Serial.println("Please Enter tick for position from 100(0°) to 445(180°)");   //Prompt User for tick.
   while (Serial.available()==0) {
     
   }
-  argument2=Serial.readString();                    //Read user input into color.
+  argument2=Serial.readString();                    //Read user input into tick.
   tick=argument2.toInt();
  while(tick < 100 or tick > 445)
   {
