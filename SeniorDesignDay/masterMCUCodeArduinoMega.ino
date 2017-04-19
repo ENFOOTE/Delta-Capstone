@@ -38,14 +38,6 @@ Adafruit_DCMotor *myMotor2 = AFMS.getMotor(2);
 Adafruit_DCMotor *myMotor3 = AFMS.getMotor(3);
 Adafruit_DCMotor *myMotor4 = AFMS.getMotor(4);
 
-// These are the declarations of the pins that are used for the encoders,
-// the first pin is the hard interrupt and the second pin is used for the
-// software interrupt.
-Encoder encoder1(2, 22);
-Encoder encoder2(3, 23);
-Encoder encoder3(18, 24);
-Encoder encoder4(19, 25);
-
 char Bearing;
 
 int speedMotor1;
@@ -53,21 +45,10 @@ int speedMotor2;
 int speedMotor3;
 int speedMotor4;
 
-long newPosition1 = 0;
-long newPosition2 = 0;
-long newPosition3 = 0;
-long newPosition4 = 0;
-
-// These variables will store the calculated gain PID values for 
-// each motor. The integral component is the most important component
-// for the calculation of each gain.  
-float gainMotor1;
-float gainMotor2;
-float gainMotor3;
-float gainMotor4;
-
 void setup() {
-  Serial.begin(115200);
+  #if DEBUG
+    Serial.begin(115200);
+  #endif
 
   Serial.println("Robot demonstration.");
 
@@ -81,15 +62,23 @@ void setup() {
   myMotor3->setSpeed(0);
   myMotor4->setSpeed(0);
 
-  Serial.flush();
+  // pwm.begin();
+  // pwm.setPWMFreq(60);
+
+  // Serial.flush();
+
+  speedMotor1 = 60;
+  speedMotor2 = 60;
+  speedMotor3 = 60;
+  speedMotor4 = 60;
 }
 
 // This loop function will contain the code for operating the wheels and
 // the robotic arm. If time allows it, this code will execute the EMF and
 // ultrasonic sensors.
 void loop() {
-  pwm.begin();
-  pwm.setPWMFreq(50);  // workingfreq MG995 50Hz
+  // pwm.begin();
+  // pwm.setPWMFreq(50);  // workingfreq MG995 50Hz
       
   String argument0;
   String argument1;
@@ -108,26 +97,12 @@ void loop() {
   }
   inputArg = Serial.readString();
 
-  delay(2500);
-
   // This while loop will be used to execute the wheel functionality. 
   while(inputArg == "w" || inputArg == "W") {
     // This argument will be used to exit this while loop.
-    String exitArg;
+    // String exitArg;
     
     Serial.println("Wheel functionality enabled.");
-    
-    delay(1000);
-
-    encoder1.write(0);
-    encoder2.write(0);
-    encoder3.write(0);
-    encoder4.write(0);
-
-    newPosition1 = abs(encoder1.read());
-    newPosition2 = abs(encoder2.read());
-    newPosition3 = abs(encoder3.read());
-    newPosition4 = abs(encoder4.read());
 
     Serial.println("Please Enter A Direction:");
   
@@ -140,18 +115,17 @@ void loop() {
     delay(100);
     
     if(Bearing == '8' || Bearing == '2' || Bearing == '4' || Bearing == '6' || Bearing == '5' || Bearing == '7' || Bearing == '9') {
-      Serial.println("Before set direction function.");
       set_Direction(Bearing);
-      Serial.println("After set direction function.");
     }    
 
-    exitArg = Serial.readString();
-    if(exitArg == "q") {
+    if(Bearing == 'q') {
       Serial.println("Wheel funtionality has ended.");
+      set_Direction('5');
       break;
     }
   }
-  
+
+  /*
   // This while loop will be used to execute the robotic arm functionality.
   while(inputArg == "r" || inputArg == "R") {
     Serial.println("Please select mode [At Rest] or [Adjustment] or [Extend]") ;
@@ -424,12 +398,11 @@ void loop() {
       break;
     }
   }
+  */
 }
 
 void set_Direction(char moveDirection) {
   delay(500);
-
-  Serial.println("Set direction function executed.");
   
   if(moveDirection == '8') {
     myMotor1->run(BACKWARD);
