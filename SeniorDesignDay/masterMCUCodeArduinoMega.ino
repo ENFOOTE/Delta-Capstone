@@ -99,12 +99,13 @@ void loop() {
   }
   inputArg = Serial.readString();
 
+  if(inputArg == "w" || inputArg == "W") {
+    Serial.println("Wheel functionality enabled.");
+    Serial.println();
+  }
+
   // This while loop will be used to execute the wheel functionality. 
   while(inputArg == "w" || inputArg == "W") {
-    // This argument will be used to exit this while loop.
-    // String exitArg;
-    
-    Serial.println("Wheel functionality enabled.");
 
     Serial.println("Please Enter A Direction:");
   
@@ -128,9 +129,15 @@ void loop() {
     }
   }
 
+  if(inputArg == "r" || inputArg == "R") {
+    Serial.println("Robotic arm functionality enabled.");
+    Serial.println();
+  }
+  
   // This while loop will be used to execute the robotic arm functionality.
   while(inputArg == "r" || inputArg == "R") {
-    Serial.println("Please select mode [At Rest] or [Adjustment] or [Extend]") ;
+    Serial.println("Please select mode, enter 'at' for [At Rest], 'ad' for [Adjustment],");
+    Serial.println("or enter 'ex' for [Extend].") ;
     // This while loop waits for user input.
     while(Serial.available() == 0) {
     }
@@ -138,137 +145,82 @@ void loop() {
     exitArmMode = argument0;
     delay(100);
   
-    if(argument0 == "At Rest") {
+    if(argument0 == "ar") {
       for(int h = 220; h > 169; h--) {
         pwm.setPWM(3,0,h);
         delay(5);
-    }
-    
-    pwm.setPWM(0, 0, 150);
-    pwm.setPWM(1, 0, 150);
-
-    for(int j = 320; j > 194; j--) {
-      Serial.println(j);
-      pwm.setPWM(2,0,j);
-    
-      delay(5);
-      if(j==200) {
-        Serial.println("URA!!!");
       }
+      pwm.setPWM(0, 0, 150);
+      pwm.setPWM(1, 0, 150);
+
+      for(int j = 320; j > 199; j--) {
+        pwm.setPWM(2,0,j);
+    
+        delay(5);
+      }
+    
+      delay(500);
+      pwm.setPWM(4, 0, 275);
+      delay(500);
     }
-    
-    delay(500);
-    
-    pwm.setPWM(4, 0, 275);
-    
-    delay(500);
-    }
-    else if(argument0 == "Extend") {
+    else if(argument0 == "ex") {
       for(int q = 170; 99 < q; q--) {
-        Serial.println("Part 0");
-        Serial.println(q);
-        
         pwm.setPWM(3, 0, q);
         
         delay(5);
-        if(q == 100) {
-          Serial.println("Ura!!!");
-        }
       }
       for(int x = 150; x < 171; x++) {
-        Serial.println("Part 1");
-        Serial.println(x);
-        
         pwm.setPWM(0,0,x);
         pwm.setPWM(1,0,x);
         
         delay(5); 
-        if(x == 170) {
-          Serial.println("URA!!!");
-        }
       }
       for(int y = 195; y < 221; y++) {
-        Serial.println("Part 2");
-        Serial.println(y);
-        
         pwm.setPWM(2,0,y);
         
         delay(5);
-        if(y == 220) {
-          Serial.println("URA!!!");
-        }
       }
       for(int z = 171; z < 201; z++) {
-        Serial.println("Part 3");
-        Serial.println(z);
-        
         pwm.setPWM(0, 0, z);
         pwm.setPWM(1, 0, z);
         
         delay(5);
-        if(z == 200) {
-          Serial.println("URA!!!");
-        }
       }
       for(int a = 221; a < 281; a++) {
-        Serial.println("Part 4");
-        
         pwm.setPWM(2, 0, a);
         
         delay(5);
-        if(a == 25) {
-          Serial.println("URA!!!");
-        }
       }
       for(int b = 200; b < 251; b++)
       {
-        Serial.println("Part 5");
-        
         pwm.setPWM(0, 0, b);
         pwm.setPWM(1, 0, b);
         
         delay(5);
-        if(b == 250) {
-          Serial.println("URA!!!");
-        }
       }
       for(int v = 280; v < 301; v++) {
-        Serial.println("Part 5.5");
-        
         pwm.setPWM(2, 0, v);
         
         delay(5);
-        if(v == 25) {
-          Serial.println("URA!!!");
-        }
       }
       for(int c = 250; c < 301; c++) {
-        Serial.println("Part 6");
-        
         pwm.setPWM(0, 0, c);
         pwm.setPWM(1, 0, c);
         
         delay(5);
-        if(c==250) {
-          Serial.println("URA!!!");
-        }
       }
       for(int d = 300; d < 321; d++) {
-        Serial.println("Part 7");
-        
         pwm.setPWM(2, 0, d);
         
         delay(5);
       }
       for(int e = 100; e < 221; e++) {
-        Serial.println("part 8");
-        
         pwm.setPWM(3, 0, e);
         
         delay(5);
       }
     }
-    else if(argument0 == "Adjustment") {
+    else if(argument0 == "ad") {
       // This while loop prompts the user input.
       Serial.println("Please enter Arm part: ");
       while (Serial.available() == 0) {
@@ -277,7 +229,7 @@ void loop() {
       exitArmMode = argument1;
       delay(100);
       
-      if(argument1 == "fingers") {
+      if(argument1 == "fi") {
         Serial.println("Please Enter tick for position from 270(close) or 300(open)");
         while (Serial.available() == 0) {
         }
@@ -294,7 +246,7 @@ void loop() {
           tick = argument2.toInt();
         }
       }
-      else if(argument1 == "base") {
+      else if(argument1 == "ba") {
         Serial.println("Please Enter tick for position from 150(40°) to 450(180°)");
         while (Serial.available() == 0) {
         }
@@ -312,7 +264,7 @@ void loop() {
           tick = argument2.toInt();
         }
       }
-      else if(argument1 == "shoulder") {
+      else if(argument1 == "sh") {
         Serial.println("Please Enter tick for position from 190(40°) to 455(180°)");
         while(Serial.available() == 0) {
         }
@@ -329,7 +281,7 @@ void loop() {
           tick = argument2.toInt();
         }
       }
-      else if(argument1 == "elbow") {
+      else if(argument1 == "eb") {
         Serial.println("Please Enter tick for position from 100(0°) to 310(135°)");
         while (Serial.available() == 0) {  
         }
@@ -346,7 +298,7 @@ void loop() {
           tick = argument2.toInt();
         }
       }
-      else if(argument1 == "wrist") {
+      else if(argument1 == "wr") {
         Serial.println("Please Enter tick for position from 100(0°) to 445(180°)");
         while(Serial.available() == 0) {
         }
@@ -377,36 +329,31 @@ void loop() {
     Serial.println(Part);
 
     // This code calculates eventhandler information.
-    if(Part == "base") {
+    if(Part == "ba") {
       pwm.setPWM(0, 0, tick);
       pwm.setPWM(1, 0, tick);
       delay(5);
     }
-    if(Part == "shoulder") {
+    if(Part == "sh") {
       pwm.setPWM(2, 0, tick);
       delay(5); 
     }
-    if(Part == "elbow") {
+    if(Part == "eb") {
       pwm.setPWM(3, 0, tick);
       delay(5);
     }
-    if(Part == "wrist") {
+    if(Part == "wr") {
       pwm.setPWM(4, 0, tick);
       delay(5);
     }
-    if(Part == "fingers") {
+    if(Part == "fi") {
       pwm.setPWM(5, 0, tick);
       delay(5);
     }
-    
-    // This argument will be used to exit this while loop.
-    String exitArg;
-
-    Serial.println("Robotic arm functionality enabled.");
 
     delay(500);
 
-    if(exitArmMode == "q") {
+    if(exitArmMode == "q" || exitArmMode == "Q") {
       pwm.reset();
       Serial.println("Robotic arm functionality has ended.");
       break;
