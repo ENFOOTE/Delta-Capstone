@@ -44,6 +44,7 @@ int speedMotor1;
 int speedMotor2;
 int speedMotor3;
 int speedMotor4;
+int state = 32;
 
 void setup() {
   #if DEBUG
@@ -71,6 +72,7 @@ void setup() {
   speedMotor2 = 60;
   speedMotor3 = 60;
   speedMotor4 = 60;
+  pinMode(state, OUTPUT);
 }
 
 // This loop function will contain the code for operating the wheels and
@@ -132,6 +134,8 @@ void loop() {
   if(inputArg == "r" || inputArg == "R") {
     Serial.println("Robotic arm functionality enabled.");
     Serial.println();
+    digitalWrite(state,HIGH);
+    
   }
   
   // This while loop will be used to execute the robotic arm functionality.
@@ -354,7 +358,7 @@ void loop() {
     delay(500);
 
     if(exitArmMode == "q" || exitArmMode == "Q") {
-      pwm.reset();
+      digitalWrite(state,LOW);
       Serial.println("Robotic arm functionality has ended.");
       break;
     }
